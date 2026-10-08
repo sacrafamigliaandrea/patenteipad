@@ -90,16 +90,28 @@ footer{text-align:center;color:var(--testo-2);font-size:18px;margin-top:32px}
 .gesto-box{padding:8px}
 .ico-riga{display:inline-flex;align-items:center;gap:10px}
 .ico-mini{width:36px;height:36px;flex:none;color:var(--testo)}.ico-mini svg{width:100%;height:100%}
-@media (max-width:600px){.griglia-icone{grid-template-columns:repeat(2,1fr)}.abbina{grid-template-columns:1fr}}
+/* gesti disegnati: opzioni in griglia 2x2, colonna sinistra degli abbinamenti, righe del riscontro */
+.griglia-gesti{display:grid;grid-template-columns:repeat(2,1fr)}
+.griglia-gesti .opz{display:flex;justify-content:center;align-items:center;padding:12px;position:relative}
+.gesto-mini{display:block;width:100%;max-width:200px;flex:none}
+.gesto-mini .ipad-gesto{max-width:none}
+.gesto-mini .g-et{font-size:17px}
+.sx-gesti .col:first-child .opz{padding:10px 12px;justify-content:center;position:relative}
+.sx-gesti .col:first-child .num{position:absolute;left:12px;top:12px} /* il badge non sposta il disegno */
+.sx-gesti .col:first-child .gesto-mini{max-width:170px}
+.righe-gesti{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.gesto-riga{display:flex;align-items:center;gap:14px}
+.gesto-riga .gesto-mini{width:160px}
+@media (max-width:600px){.griglia-icone{grid-template-columns:repeat(2,1fr)}.abbina{grid-template-columns:1fr}.griglia-gesti{grid-template-columns:1fr}.gesto-riga{flex-direction:column;align-items:flex-start}}
 /* feedback immediato: risposta confermata (bloccata) e pannello di riscontro */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .opz:disabled{cursor:default}.opz:disabled:active{transform:none}
 .segno{display:inline-flex;flex:none;width:30px;height:30px}.segno svg{width:100%;height:100%}
 .opz.giusta,.opz.sbagliata{display:flex;align-items:center;gap:12px}
-.opzioni.vf .opz.giusta,.opzioni.vf .opz.sbagliata,.griglia-icone .opz{justify-content:center}
+.opzioni.vf .opz.giusta,.opzioni.vf .opz.sbagliata,.griglia-icone .opz,.griglia-gesti .opz{justify-content:center}
 .opz.giusta{outline:3px solid var(--ok-testo);background:color-mix(in srgb,var(--ok) var(--tinta-riscontro),var(--vetro-forte))}
 .opz.sbagliata{outline:3px solid var(--ambra-testo);background:color-mix(in srgb,var(--ambra) var(--tinta-riscontro),var(--vetro-forte))}
-.griglia-icone .opz{position:relative}.griglia-icone .segno{position:absolute;top:8px;right:8px}
+.griglia-icone .opz{position:relative}.griglia-icone .segno,.griglia-gesti .segno{position:absolute;top:8px;right:8px}
 .riscontro{margin-top:20px;padding:16px 20px;border-radius:16px;display:flex;flex-direction:column;gap:10px}
 .riscontro:focus{outline:none} /* riceve il focus solo da script, per VoiceOver */
 .riscontro p{margin:0}
@@ -269,24 +281,25 @@ const ICONE = [
   { cat:"Stati e feedback", nome:"Promemoria", sf:"checklist", desc:"Lista di cose da fare", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 8 8 4"/><polyline points="3 13 5 15 8 11"/><polyline points="3 20 5 22 8 18"/><line x1="12" y1="6" x2="21" y2="6"/><line x1="12" y1="13" x2="21" y2="13"/><line x1="12" y1="20" x2="21" y2="20"/></svg>` },
   { cat:"Stati e feedback", nome:"Calendario", sf:"calendar", desc:"Apre il calendario o un evento", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>` },
 ];
+// come: descrizione a parole (da iPad Ninja), mostrata solo nel riscontro e nell'esito.
+// Verificati su iPadOS 26: 'slide-over' rimosso (in iPadOS 26 non si apre più trascinando dal bordo destro).
 const GESTI = [
-  { id:'home',          azione:'Tornare alla schermata Home',            zona:'basso',        dir:'su' },
-  { id:'centro-ctrl',   azione:'Aprire il Centro di Controllo',          zona:'alto-destra',  dir:'giu' },
-  { id:'notifiche',     azione:'Vedere le notifiche',                    zona:'alto-sinistra',dir:'giu' },
-  { id:'spotlight',     azione:'Aprire la ricerca Spotlight',            zona:'schermo',      dir:'giu' },
-  { id:'app-succ',      azione:'Passare all\'app successiva',            zona:'barra',        dir:'sinistra' },
-  { id:'app-prec',      azione:'Tornare all\'app precedente',            zona:'barra',        dir:'destra' },
-  { id:'dock',          azione:'Mostrare il Dock dentro un\'app',        zona:'basso',        dir:'su', corto:true },
-  { id:'selettore',     azione:'Aprire il selettore delle app',          zona:'basso',        dir:'su', pausa:true },
-  { id:'slide-over',    azione:'Aprire un\'app in Slide Over',           zona:'bordo-destro', dir:'sinistra' },
-  { id:'doppio-tap',    azione:'Selezionare una parola',                 zona:'schermo',      dir:'tocco', tocchi:2 },
-  { id:'triplo-tap',    azione:'Selezionare un intero paragrafo',        zona:'schermo',      dir:'tocco', tocchi:3 },
-  { id:'premi',         azione:'Aprire le azioni rapide o le opzioni',   zona:'schermo',      dir:'premi' },
-  { id:'zoom',          azione:'Ingrandire una foto',                    zona:'schermo',      dir:'apri', dita:2 },
-  { id:'copia3',        azione:'Copiare',                                zona:'schermo',      dir:'pizzica', dita:3 },
-  { id:'incolla3',      azione:'Incollare',                              zona:'schermo',      dir:'apri', dita:3 },
-  { id:'annulla3',      azione:'Annullare l\'ultima azione',             zona:'schermo',      dir:'sinistra', dita:3 },
-  { id:'ripristina3',   azione:'Ripristinare l\'azione annullata',       zona:'schermo',      dir:'destra', dita:3 },
+  { id:'home',        azione:'Tornare alla schermata Home',          come:'Scorri in alto dal bordo inferiore',             zona:'basso',        dir:'su' },
+  { id:'centro-ctrl', azione:'Aprire il Centro di Controllo',        come:'Scorri in basso dall\'angolo in alto a destra',  zona:'alto-destra',  dir:'giu' },
+  { id:'notifiche',   azione:'Vedere le notifiche',                  come:'Scorri in basso dall\'angolo in alto a sinistra',zona:'alto-sinistra',dir:'giu' },
+  { id:'spotlight',   azione:'Aprire la ricerca Spotlight',          come:'Scorri in basso dal centro della schermata Home',zona:'schermo',      dir:'giu' },
+  { id:'app-succ',    azione:'Passare all\'app successiva',          come:'Scorri a sinistra sulla barra inferiore',        zona:'barra',        dir:'sinistra' },
+  { id:'app-prec',    azione:'Tornare all\'app precedente',          come:'Scorri a destra sulla barra inferiore',          zona:'barra',        dir:'destra' },
+  { id:'dock',        azione:'Mostrare il Dock dentro un\'app',      come:'Scorri poco in alto dal bordo inferiore',        zona:'basso',        dir:'su', corto:true },
+  { id:'selettore',   azione:'Aprire il selettore delle app',        come:'Scorri in alto dal fondo e fai una pausa',       zona:'basso',        dir:'su', pausa:true },
+  { id:'doppio-tap',  azione:'Selezionare una parola',               come:'Tocca due volte il testo (doppio tap)',          zona:'schermo',      dir:'tocco', tocchi:2 },
+  { id:'triplo-tap',  azione:'Selezionare un intero paragrafo',      come:'Tocca tre volte il testo (triplo tap)',          zona:'schermo',      dir:'tocco', tocchi:3 },
+  { id:'premi',       azione:'Aprire le azioni rapide o le opzioni', come:'Tieni il dito fermo su un elemento',             zona:'schermo',      dir:'premi' },
+  { id:'zoom',        azione:'Ingrandire una foto',                  come:'Allontana due dita sullo schermo',               zona:'schermo',      dir:'apri', dita:2 },
+  { id:'copia3',      azione:'Copiare',                              come:'Pizzica con tre dita (chiudi)',                  zona:'schermo',      dir:'pizzica', dita:3 },
+  { id:'incolla3',    azione:'Incollare',                            come:'Apri tre dita (allarga)',                        zona:'schermo',      dir:'apri', dita:3 },
+  { id:'annulla3',    azione:'Annullare l\'ultima azione',           come:'Scorri a sinistra con tre dita',                 zona:'schermo',      dir:'sinistra', dita:3 },
+  { id:'ripristina3', azione:'Ripristinare l\'azione annullata',     come:'Scorri a destra con tre dita',                   zona:'schermo',      dir:'destra', dita:3 },
 ];
 const BANCA = [
   // ===== Area Regole d'uso (fonte: Regolamento strumenti digitali, Prot. 09/2026) =====
@@ -323,7 +336,7 @@ const BANCA = [
       'Sì, perché in ricreazione l\'uso dell\'iPad è libero per tutti.',
       'No: in ricreazione l\'iPad serve solo per i compiti.'],
     corretta:0,
-    spiega:'L\'iPad è autorizzato solo per attività didattiche con il permesso del docente; è vietato in ricreazione e sugli scuolabus.' },
+    spiega:'In ricreazione l\'iPad non si usa, nemmeno per un video: è il momento della pausa. Come puoi viverla al meglio senza schermo?' },
   { id:'reg-05', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['rete'],
     scenario:'L\'iPad di Davide non prende bene il Wi-Fi e lui pensa di usare la connessione dati di una SIM.',
     testo:'Cosa prevede il Regolamento?',
@@ -372,7 +385,7 @@ const BANCA = [
       'Usarlo solo se il numero gli sembra verosimile.'],
     corretta:0,
     spiega:'Le risposte dell\'IA vanno sempre verificate, perché possono essere inesatte o fuorvianti. Dove potrebbe controllare quel numero?' },
-  { id:'reg-12', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['diffusione'],
+  { id:'reg-12', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['diffusione', 'condotta'],
     scenario:'Uno studente diffonde in rete, anche da casa, un video registrato a scuola.',
     testo:'Quale conseguenza è prevista dal Regolamento?',
     opzioni:['La sospensione dalle lezioni per alcuni giorni.',
@@ -424,7 +437,7 @@ const BANCA = [
       'Studio individuale.'],
     corretta:0,
     spiega:'A scuola l\'iPad è autorizzato solo per attività didattiche, formative e di studio assegnate dai docenti: ogni altro uso è uso improprio, e giocare per conto proprio è sempre vietato. Che cosa rende «didattica» un\'attività sull\'iPad?' },
-  { id:'reg-20', area:'regole', tipo:'vf', fonte:'regolamento',
+  { id:'reg-20', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['autorizzazione'],
     testo:'In classe posso usare l\'iPad anche senza il permesso del docente, se lo uso per studiare.',
     corretta:false,
     spiega:'Il regolamento dice che l\'iPad si usa solo con l\'autorizzazione del docente. Perché è il docente a decidere quando lo strumento serve alla lezione?' },
@@ -469,7 +482,7 @@ const BANCA = [
     testo:'Durante le vacanze di Natale il profilo scolastico smette di funzionare.',
     corretta:false,
     spiega:'Il profilo resta attivo H24, a scuola e a casa, fino alla conclusione dell\'anno scolastico: le vacanze sono dentro l\'anno. Perché è utile che le protezioni restino attive anche durante le feste?' },
-  { id:'reg-29', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['profilo-h24'],
+  { id:'reg-29', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['profilo-h24', 'profilo-rimozione'],
     scenario:'È finita la scuola e Matteo si chiede che cosa succederà al profilo scolastico del suo iPad.',
     testo:'Che cosa prevede il regolamento?',
     opzioni:['Si disinstalla da solo l\'ultimo giorno di scuola.',
@@ -541,7 +554,7 @@ const BANCA = [
     testo:'Per le infrazioni successive alla prima, l\'uso dell\'iPad può essere limitato per un periodo e si può dover lavorare solo su carta.',
     corretta:true,
     spiega:'Per le infrazioni successive è prevista una limitazione temporanea dell\'iPad e attività in modalità analogica, con la possibilità di usare solo il cartaceo. Che cosa ti dice questo sul valore della fiducia che ricevi usando l\'iPad?' },
-  { id:'reg-41', area:'regole', tipo:'vf', fonte:'regolamento',
+  { id:'reg-41', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['condotta'],
     testo:'Tutte le sanzioni previste dal regolamento hanno conseguenze sul voto di condotta.',
     corretta:true,
     spiega:'Tutte le sanzioni incidono sul voto di condotta, deciso dal Consiglio di classe nello scrutinio di ogni quadrimestre. Perché il comportamento digitale fa parte del comportamento a scuola?' },
@@ -573,7 +586,7 @@ const BANCA = [
     spiega:'Il regolamento spiega queste parole tra parentesi, accanto alle regole. Quale di queste parole ti era nuova prima di leggere il regolamento?' },
 
   // reg-47…reg-64 (reg-55 e reg-56 rimosse nel fix 1 perché doppioni): dal Regolamento in sintesi affisso in classe (docs/regolamento-sintesi-classe.md)
-  { id:'reg-47', area:'regole', tipo:'scelta', fonte:'regolamento',
+  { id:'reg-47', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['zaino', 'autorizzazione'],
     scenario:'Gabriele entra in classe alle 8:00. Nella prima ora l\'iPad non serve.',
     testo:'Dove deve stare il suo iPad?',
     opzioni:['Nel proprio zaino', 'Sul banco, spento', 'Sotto il banco', 'Sulla cattedra'],
@@ -583,7 +596,7 @@ const BANCA = [
     testo:'Posso prestare il mio iPad a un compagno, se me lo restituisce entro la fine dell\'ora.',
     corretta:false,
     spiega:'L\'iPad è uno strumento personale: non va prestato, nemmeno per poco tempo. Chi ne risponde, mentre è nelle mani di un altro?' },
-  { id:'reg-49', area:'regole', tipo:'vf', fonte:'regolamento',
+  { id:'reg-49', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['zaino'],
     testo:'Durante la ricreazione posso lasciare l\'iPad sul banco, se l\'aula resta chiusa a chiave.',
     corretta:false,
     spiega:'L\'iPad sta sempre nel proprio zaino, non sul banco, anche in ricreazione: non va lasciato incustodito. Che cosa ti aiuta a ricordarti di metterlo via?' },
@@ -601,7 +614,7 @@ const BANCA = [
     opzioni:['In nessun momento', 'In ricreazione', 'Se il gioco è adatto all\'età', 'Nelle ore di supplenza'],
     corretta:0,
     spiega:'Giocare per conto proprio con l\'iPad a scuola è sempre vietato; sono ammessi solo i giochi educativi proposti dagli insegnanti, come parte della lezione. Che differenza c\'è tra un gioco per conto tuo e uno proposto dall\'insegnante?' },
-  { id:'reg-53', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['blocchi-profilo'],
+  { id:'reg-53', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['blocchi-profilo', 'profilo-rimozione'],
     scenario:'Durante un esperimento di scienze Matilde vorrebbe fotografare con l\'iPad il lavoro sul suo banco.',
     testo:'Che cosa è corretto che faccia?',
     opzioni:['Chiede all\'insegnante un altro modo per documentarlo.',
@@ -631,7 +644,7 @@ const BANCA = [
     opzioni:['Una nota di merito', 'Un voto in più', 'Un\'ora di iPad libero', 'L\'esonero da una verifica'],
     corretta:0,
     spiega:'Gli studenti meritevoli possono ricevere note di merito e partecipare ad attività, laboratori e uscite opzionali organizzate dal Centro Educativo. Quale comportamento, secondo te, merita di essere riconosciuto?' },
-  { id:'reg-59', area:'regole', tipo:'scelta', fonte:'regolamento',
+  { id:'reg-59', area:'regole', tipo:'scelta', fonte:'regolamento', gruppi:['sanzioni'],
     testo:'Quale di queste è una delle sanzioni previste dal regolamento?',
     opzioni:['Lavori socialmente utili', 'Una multa da pagare', 'Cambiare classe per un mese', 'Restare a scuola il sabato'],
     corretta:0,
@@ -670,7 +683,7 @@ const BANCA = [
       'Valgono solo quando si esce dall\'aula'],
     corretta:0,
     spiega:'Il regolamento chiede a ogni studente di osservare le disposizioni di sicurezza e le regole di comportamento in ogni attività, anche davanti a uno schermo. Quali regole ti sembrano più importanti quando in classe si usano gli iPad?' },
-  { id:'reg-64', area:'regole', tipo:'vf', fonte:'regolamento',
+  { id:'reg-64', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['sanzioni'],
     testo:'Per il regolamento, qualsiasi violazione porta subito alla sospensione dalle lezioni.',
     corretta:false,
     spiega:'Le sanzioni si applicano in base alla gravità della violazione: richiamo verbale, lavori socialmente utili, comunicazione scritta, nota disciplinare, convocazione dei genitori, sospensione dalle lezioni. Perché non tutte le violazioni hanno la stessa conseguenza?' },
@@ -704,7 +717,7 @@ const BANCA = [
       'Sì, perché fuori da scuola le riprese sono libere.'],
     corretta:0,
     spiega:'La gita è un\'attività didattica a tutti gli effetti: i dispositivi vengono restituiti solo per poco tempo, quando lo decide il docente, per esempio per comunicare con la famiglia. Le riprese restano vietate, e farle a qualcuno a sua insaputa è ancora più grave; anche conservare il video senza consenso è una violazione. Come si sentirebbe la compagna se lo scoprisse?' },
-  { id:'dil-04', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['diffusione'],
+  { id:'dil-04', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['diffusione', 'riprese'],
     scenario:'Sara riceve in un gruppo un video girato in classe da un\'altra persona: si vede un docente durante la spiegazione. Sara non l\'ha girato.',
     testo:'Se Sara lo inoltra ai suoi amici, che cosa dice il Regolamento?',
     opzioni:['È una violazione: anche così il video viene diffuso.',
@@ -745,7 +758,7 @@ const BANCA = [
       'Deve chiedere alla segreteria di toglierlo oggi.'],
     corretta:0,
     spiega:'Il profilo resta attivo H24, a scuola e a casa, fino alla conclusione dell\'anno scolastico e si disinstalla da solo l\'ultimo giorno di scuola dell\'anno, non prima delle vacanze. Perché è utile che resti attivo anche durante le feste?' },
-  { id:'dil-09', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['rete'],
+  { id:'dil-09', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['rete', 'prestito'],
     scenario:'A casa, un sito che sembra utile per una ricerca è bloccato dal filtro del profilo. Un compagno spiega a Tommaso come usare una VPN per aggirare il blocco, «tanto è per studiare».',
     testo:'Che cosa è coerente con il Regolamento?',
     opzioni:['Lasciare stare la VPN e chiedere a un adulto.',
@@ -754,7 +767,7 @@ const BANCA = [
       'Farsi prestare l\'iPad del compagno con la VPN.'],
     corretta:0,
     spiega:'Il profilo filtra i contenuti 24 ore su 24 ed è vietato aggirarlo, anche a casa e anche per poco; l\'iPad di un compagno è sotto la responsabilità della sua famiglia. Il fatto che lo scopo sia lo studio rende accettabile qualsiasi mezzo?' },
-  { id:'dil-10', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['proprieta-famiglia', 'app-profilo'],
+  { id:'dil-10', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['proprieta-famiglia', 'app-profilo', 'prestito', 'giochi'],
     scenario:'Durante la pausa pranzo un compagno chiede a Elisa il codice per sbloccare l\'iPad di lei: vuole installarci un gioco non adatto al profilo studenti, «tanto lo tolgo subito».',
     testo:'Che cosa è coerente con il Regolamento?',
     opzioni:['Non darglielo: dell\'iPad risponde la famiglia di Elisa.',
@@ -763,7 +776,7 @@ const BANCA = [
       'Darglielo, perché tra compagni di classe ci si aiuta.'],
     corretta:0,
     spiega:'L\'iPad è uno strumento personale che non si presta, e del suo uso risponde la famiglia; installare app non adeguate al profilo studenti è vietato, chiunque lo faccia, e a scuola giocare per conto proprio è sempre vietato. Che cosa può succedere quando altre persone conoscono il codice del tuo iPad?' },
-  { id:'dil-11', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['ia-dati'],
+  { id:'dil-11', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['ia-dati', 'diffusione'],
     scenario:'La sorella di Chiara, che va alle superiori, vuole chiedere a un chatbot un biglietto di auguri per un\'amica. Per renderlo più personale sta per incollare una foto di classe con i nomi di tutti.',
     testo:'Secondo le regole del nostro Regolamento, come andrebbe valutato questo uso dell\'intelligenza artificiale (IA)?',
     opzioni:['Non va fatto: la foto e i nomi sono dati non necessari.',
@@ -804,7 +817,7 @@ const BANCA = [
       'Lo ritirano i docenti al museo e lo ridanno in pullman.'],
     corretta:0,
     spiega:'Le gite sono attività didattiche a tutti gli effetti: i dispositivi vengono ritirati dai docenti e restituiti solo per poco tempo, quando lo decide il docente, per esempio per comunicare con la famiglia. In che modo questa regola tutela anche la sicurezza di Nicola?' },
-  { id:'dil-16', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['scuolabus'],
+  { id:'dil-16', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['scuolabus', 'uscite'],
     scenario:'Sullo scuolabus del ritorno Alice vorrebbe finire sull\'iPad un compito assegnato per il giorno dopo.',
     testo:'Che cosa prevede il Regolamento?',
     opzioni:['Non può: sullo scuolabus l\'iPad non si usa.',
@@ -822,7 +835,7 @@ const BANCA = [
       'Usarlo solo per avvisare i genitori dell\'accaduto.'],
     corretta:0,
     spiega:'Il permesso della Dirigenza vale a una condizione: il cellulare va depositato spento in segreteria all\'entrata. Tenerlo nello zaino, anche spento, è vietato. Perché è meglio dirlo subito piuttosto che sperare che nessuno se ne accorga?' },
-  { id:'dil-18', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['proprieta-famiglia'],
+  { id:'dil-18', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['proprieta-famiglia', 'zaino'],
     scenario:'Dopo la scuola Federico lascia l\'iPad sul muretto del cortile per giocare a pallone. Quando torna, l\'iPad non c\'è più.',
     testo:'Secondo il Regolamento, chi ne risponde?',
     opzioni:['La sua famiglia, perché è successo per incuria.',
@@ -874,7 +887,7 @@ const BANCA = [
       'Usarlo e restituirlo al cambio dell\'ora.'],
     corretta:0,
     spiega:'L\'iPad è uno strumento personale che non va prestato, nemmeno per la lezione; deve arrivare a scuola completamente carico, e il materiale non si fa portare da casa. Che cosa può fare Gaia la sera prima perché non succeda più?' },
-  { id:'dil-24', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['musica'],
+  { id:'dil-24', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['musica', 'ricreazione'],
     scenario:'Durante un lavoro individuale sull\'iPad, autorizzato dall\'insegnante, Nicolò mette le cuffie e ascolta musica a basso volume: «Così mi concentro e non disturbo nessuno».',
     testo:'Che cosa prevede il Regolamento?',
     opzioni:['Non può: il lavoro è autorizzato, non la musica.',
@@ -895,472 +908,472 @@ const BANCA = [
 
   // ===== Area Icone (fonte: Icone Apple, 60 domande convertite; distrattori statici: stessa categoria in ICONE, poi altre) =====
   // ico-27, ico-35, ico-42 riscritte per coerenza col Regolamento (fotocamera e videochiamate bloccate dal profilo)
-  { id:'ico-01', area:'icone', tipo:'scelta', fonte:'icone', icona:'Condividi',
+  { id:'ico-01', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-condividi'], icona:'Condividi',
     testo:'Come si chiama questa icona?',
     opzioni:['Condividi', 'Cerca', 'Aggiungi', 'Modifica'], corretta:0,
     spiega:'È la freccia che esce da un quadrato: apre il pannello di condivisione (AirDrop, Mail, Messaggi).' },
-  { id:'ico-02', area:'icone', tipo:'scelta', fonte:'icone', icona:'Cerca',
+  { id:'ico-02', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-cerca'], icona:'Cerca',
     testo:'Come si chiama questa icona?',
     opzioni:['Cerca', 'Condividi', 'Aggiungi', 'Modifica'], corretta:0,
     spiega:'La lente d\'ingrandimento serve sempre a cercare.' },
-  { id:'ico-03', area:'icone', tipo:'scelta', fonte:'icone', icona:'Salva',
+  { id:'ico-03', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-salva'], icona:'Salva',
     testo:'Come si chiama questa icona?',
     opzioni:['Salva', 'Condividi', 'Cerca', 'Aggiungi'], corretta:0,
     spiega:'La freccia che entra nel quadrato verso il basso significa salvare sul dispositivo.' },
-  { id:'ico-04', area:'icone', tipo:'scelta', fonte:'icone', icona:'Elimina',
+  { id:'ico-04', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-elimina'], icona:'Elimina',
     testo:'Come si chiama questa icona?',
     opzioni:['Elimina', 'Condividi', 'Cerca', 'Aggiungi'], corretta:0,
     spiega:'Il cestino serve a eliminare o cestinare un elemento.' },
-  { id:'ico-05', area:'icone', tipo:'scelta', fonte:'icone', icona:'AirDrop',
+  { id:'ico-05', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-airdrop'], icona:'AirDrop',
     testo:'Come si chiama questa icona?',
     opzioni:['AirDrop', 'Wi-Fi', 'Bluetooth', 'Modalità aereo'], corretta:0,
     spiega:'I tre archi con il triangolo sotto sono il simbolo di AirDrop.' },
-  { id:'ico-06', area:'icone', tipo:'scelta', fonte:'icone', icona:'Impostazioni',
+  { id:'ico-06', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-impostazioni'], icona:'Impostazioni',
     testo:'Come si chiama questa icona?',
     opzioni:['Impostazioni', 'Notifiche', 'Profilo', 'Blocca'], corretta:0,
     spiega:'L\'ingranaggio apre le impostazioni.' },
-  { id:'ico-07', area:'icone', tipo:'scelta', fonte:'icone', icona:'Notifiche',
+  { id:'ico-07', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-notifiche'], icona:'Notifiche',
     testo:'Come si chiama questa icona?',
     opzioni:['Notifiche', 'Impostazioni', 'Profilo', 'Blocca'], corretta:0,
     spiega:'La campanella mostra le notifiche.' },
-  { id:'ico-08', area:'icone', tipo:'scelta', fonte:'icone', icona:'Aggiorna',
+  { id:'ico-08', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-aggiorna'], icona:'Aggiorna',
     testo:'Come si chiama questa icona?',
     opzioni:['Aggiorna', 'Impostazioni', 'Notifiche', 'Profilo'], corretta:0,
     spiega:'La freccia circolare ricarica o aggiorna la pagina.' },
-  { id:'ico-09', area:'icone', tipo:'scelta', fonte:'icone', icona:'Foto',
+  { id:'ico-09', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-foto'], icona:'Foto',
     testo:'Come si chiama questa icona?',
     opzioni:['Foto', 'Fotocamera', 'Microfono', 'Microfono spento'], corretta:0,
     spiega:'Il quadrato con la montagna e il sole è l\'app Foto.' },
-  { id:'ico-10', area:'icone', tipo:'scelta', fonte:'icone', icona:'Wi-Fi',
+  { id:'ico-10', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-wi-fi'], icona:'Wi-Fi',
     testo:'Come si chiama questa icona?',
     opzioni:['Wi-Fi', 'Bluetooth', 'AirDrop', 'Modalità aereo'], corretta:0,
     spiega:'Gli archi a ventaglio indicano la connessione Wi-Fi.' },
-  { id:'ico-11', area:'icone', tipo:'scelta', fonte:'icone', icona:'Cartella',
+  { id:'ico-11', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-cartella'], icona:'Cartella',
     testo:'Come si chiama questa icona?',
     opzioni:['Cartella', 'Documento', 'iCloud', 'Preferito'], corretta:0,
     spiega:'La cartellina serve a contenere e aprire i file.' },
-  { id:'ico-12', area:'icone', tipo:'scelta', fonte:'icone', icona:'Preferito',
+  { id:'ico-12', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-preferito'], icona:'Preferito',
     testo:'Come si chiama questa icona?',
     opzioni:['Preferito', 'Cartella', 'Documento', 'iCloud'], corretta:0,
     spiega:'La stella aggiunge ai preferiti.' },
-  { id:'ico-13', area:'icone', tipo:'scelta', fonte:'icone', icona:'Calendario',
+  { id:'ico-13', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-calendario'], icona:'Calendario',
     testo:'Come si chiama questa icona?',
     opzioni:['Calendario', 'Promemoria', 'Documento', 'Notifiche'], corretta:0,
     spiega:'Il riquadro con i giorni è il Calendario.' },
-  { id:'ico-14', area:'icone', tipo:'scelta', fonte:'icone', icona:'Microfono',
+  { id:'ico-14', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-microfono'], icona:'Microfono',
     testo:'Come si chiama questa icona?',
     opzioni:['Microfono', 'Foto', 'Fotocamera', 'Microfono spento'], corretta:0,
     spiega:'Il microfono registra audio o attiva la voce, per esempio per dettare un testo: mai per registrare compagni o docenti a loro insaputa. Perché serve sempre il permesso di chi parla?' },
-  { id:'ico-15', area:'icone', tipo:'scelta', fonte:'icone', icona:'Annulla',
+  { id:'ico-15', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-annulla'], icona:'Annulla',
     testo:'Come si chiama questa icona?',
     opzioni:['Annulla', 'Condividi', 'Cerca', 'Aggiungi'], corretta:0,
     spiega:'La freccia che torna indietro ad arco annulla l\'ultima azione.' },
-  { id:'ico-16', area:'icone', tipo:'scelta', fonte:'icone', icona:'Mail',
+  { id:'ico-16', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-mail'], icona:'Mail',
     testo:'Come si chiama questa icona?',
     opzioni:['Mail', 'Messaggio', 'Telefono', 'Videochiamata'], corretta:0,
     spiega:'La busta da lettera è l\'app Mail.' },
-  { id:'ico-17', area:'icone', tipo:'scelta', fonte:'icone', icona:'Musica',
+  { id:'ico-17', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-musica'], icona:'Musica',
     testo:'Come si chiama questa icona?',
     opzioni:['Musica', 'Foto', 'Fotocamera', 'Microfono'], corretta:0,
     spiega:'La doppia nota musicale apre l\'app Musica.' },
-  { id:'ico-18', area:'icone', tipo:'scelta', fonte:'icone', icona:'AirPlay',
+  { id:'ico-18', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-airplay'], icona:'AirPlay',
     testo:'Come si chiama questa icona?',
     opzioni:['AirPlay', 'Foto', 'Fotocamera', 'Microfono'], corretta:0,
     spiega:'Lo schermo con il triangolo sotto è AirPlay: manda lo schermo sulla TV.' },
-  { id:'ico-19', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-19', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-condividi'],
     testo:'Quale icona apre il pannello per condividere un file con AirDrop, Mail o Messaggi?',
     opzioni:['Condividi', 'Cerca', 'Aggiungi', 'Modifica'], opzioniIcone:true, corretta:0,
     spiega:'È l\'icona Condividi: la freccia che esce dal quadrato.' },
-  { id:'ico-20', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-20', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-cerca'],
     testo:'Quale icona usi per cercare una parola dentro un\'app?',
     opzioni:['Cerca', 'Condividi', 'Aggiungi', 'Modifica'], opzioniIcone:true, corretta:0,
     spiega:'La lente d\'ingrandimento (Cerca) trova parole dentro l\'app. In quali app l\'hai già vista?' },
-  { id:'ico-21', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-21', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-aggiungi'],
     testo:'Quale icona usi per aggiungere un nuovo evento nel Calendario?',
     opzioni:['Aggiungi', 'Condividi', 'Cerca', 'Modifica'], opzioniIcone:true, corretta:0,
     spiega:'Il segno più (Aggiungi) crea un nuovo elemento, come un evento. Dove lo trovi di solito sullo schermo?' },
-  { id:'ico-22', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-22', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-elimina'],
     testo:'Quale icona cancella o cestina un elemento?',
     opzioni:['Elimina', 'Condividi', 'Cerca', 'Aggiungi'], opzioniIcone:true, corretta:0,
     spiega:'Il cestino (Elimina) cancella o sposta nel cestino. Perché conviene controllare prima di toccarlo?' },
-  { id:'ico-23', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-23', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-salva', 'i-condividi'],
     testo:'Quale icona salva un file sul dispositivo?',
     opzioni:['Salva', 'Condividi', 'Documento', 'iCloud'], opzioniIcone:true, corretta:0,
     spiega:'La freccia che entra nel quadrato verso il basso (Salva) tiene il file sull\'iPad. In che cosa è diversa da Condividi, con la freccia verso l\'alto?' },
-  { id:'ico-24', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-24', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-indietro'],
     testo:'Quale icona ti riporta alla schermata precedente?',
     opzioni:['Indietro', 'Avanti', 'Su', 'Giù'], opzioniIcone:true, corretta:0,
     spiega:'La freccetta verso sinistra (Indietro) riporta alla schermata precedente. Dove si trova di solito?' },
-  { id:'ico-25', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-25', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-impostazioni'],
     testo:'Quale icona apre le impostazioni?',
     opzioni:['Impostazioni', 'Notifiche', 'Profilo', 'Blocca'], opzioniIcone:true, corretta:0,
     spiega:'L\'ingranaggio (Impostazioni) apre le impostazioni dell\'app o dell\'iPad.' },
-  { id:'ico-26', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-26', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-notifiche'],
     testo:'Quale icona mostra le notifiche e gli avvisi?',
     opzioni:['Notifiche', 'Impostazioni', 'Profilo', 'Blocca'], opzioniIcone:true, corretta:0,
     spiega:'La campanella (Notifiche) mostra gli avvisi che arrivano. Quali notifiche ti servono davvero a scuola?' },
-  { id:'ico-27', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-27', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-fotocamera'],
     testo:'Il profilo scolastico blocca l\'app che scatta foto e gira video. Quale icona la rappresenta?',
     opzioni:['Fotocamera', 'Foto', 'Microfono', 'AirPlay'], opzioniIcone:true, corretta:0,
     spiega:'È la macchina fotografica (Fotocamera). Sul tuo iPad il profilo studente la blocca, per proteggere la privacy di compagni e docenti. Perché nessuno dovrebbe essere fotografato senza saperlo?' },
-  { id:'ico-28', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-28', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-blocca'],
     testo:'Quale icona blocca lo schermo o protegge l\'accesso?',
     opzioni:['Blocca', 'Impostazioni', 'Notifiche', 'Profilo'], opzioniIcone:true, corretta:0,
     spiega:'Il lucchetto chiuso (Blocca) protegge l\'accesso. Come cambia il disegno quando il lucchetto è aperto?' },
-  { id:'ico-29', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-29', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-preferito'],
     testo:'Quale icona aggiunge un elemento ai preferiti?',
     opzioni:['Preferito', 'Cartella', 'Documento', 'iCloud'], opzioniIcone:true, corretta:0,
     spiega:'La stella (Preferito) mette un elemento tra i preferiti, così lo ritrovi subito.' },
-  { id:'ico-30', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-30', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-muto', 'i-microfono-spento'],
     testo:'Quale icona toglie il suono che esce dagli altoparlanti dell\'iPad?',
     opzioni:['Muto', 'Audio', 'Microfono spento', 'Microfono'], opzioniIcone:true, corretta:0,
     spiega:'L\'altoparlante barrato (Muto) toglie il suono. Il microfono barrato invece spegne la tua voce: che differenza c\'è?' },
-  { id:'ico-31', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-31', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-copia'],
     testo:'Quale icona copia un testo selezionato negli appunti?',
     opzioni:['Copia', 'Condividi', 'Cerca', 'Aggiungi'], opzioniIcone:true, corretta:0,
     spiega:'I due fogli sovrapposti (Copia) mettono il testo negli appunti. Quale icona usi dopo, per inserirlo altrove?' },
-  { id:'ico-32', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-32', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-play'],
     testo:'Quale icona avvia la riproduzione di un video o una canzone?',
     opzioni:['Play', 'Pausa', 'AirPlay', 'Audio'], opzioniIcone:true, corretta:0,
     spiega:'Il triangolo (Play) avvia la riproduzione. Quale icona usi per fermarla un momento?' },
-  { id:'ico-33', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-33', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-informazione', 'i-aiuto'],
     testo:'Quale icona mostra le informazioni o i dettagli di un elemento?',
     opzioni:['Informazione', 'Conferma', 'Attenzione', 'Aiuto'], opzioniIcone:true, corretta:0,
     spiega:'La «i» nel cerchio (Informazione) mostra i dettagli. Il punto interrogativo, invece, apre l\'aiuto.' },
-  { id:'ico-34', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-34', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-condividi'],
     testo:'Hai finito un disegno e vuoi mandarlo all\'insegnante con AirDrop. Quale icona tocchi per prima?',
     opzioni:['Condividi', 'Salva', 'Messaggio', 'Aggiungi'], opzioniIcone:true, corretta:0,
     spiega:'AirDrop si trova dentro il pannello Condividi: parti sempre dall\'icona Condividi.' },
-  { id:'ico-35', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-35', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-foto'],
     testo:'L\'insegnante ti ha mandato con AirDrop la foto del cartellone di classe. Quale icona apri per rivederla?',
     opzioni:['Foto', 'Fotocamera', 'Microfono', 'Microfono spento'], opzioniIcone:true, corretta:0,
     spiega:'Le immagini ricevute con AirDrop finiscono nell\'app Foto. La Fotocamera invece è bloccata dal profilo scolastico. Dove cercheresti un\'immagine che hai salvato ieri?' },
-  { id:'ico-36', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-36', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-muto'],
     testo:'Il volume è altissimo e disturbi i compagni. Quale icona tocchi per togliere subito l\'audio?',
     opzioni:['Muto', 'Microfono spento', 'Microfono', 'Luminosità'], opzioniIcone:true, corretta:0,
     spiega:'L\'altoparlante barrato (Muto) toglie subito l\'audio. Che cosa puoi fare, oltre a toglierlo, per non disturbare i compagni?' },
-  { id:'ico-37', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-37', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-salva'],
     testo:'Hai ricevuto un PDF e vuoi conservarlo sull\'iPad, nell\'app File. Quale icona cerchi?',
     opzioni:['Salva', 'Copia', 'Segnalibro', 'Aggiungi'], opzioniIcone:true, corretta:0,
     spiega:'L\'icona Salva tiene il file sull\'iPad, nell\'app File. Copia invece mette solo negli appunti: che differenza c\'è?' },
-  { id:'ico-38', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-38', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-segnalibro'],
     testo:'Una pagina web ti piace e vuoi ritrovarla domani. Quale icona usi per salvarla?',
     opzioni:['Segnalibro', 'Cartella', 'Documento', 'iCloud'], opzioniIcone:true, corretta:0,
     spiega:'Il Segnalibro salva la pagina per ritrovarla.' },
-  { id:'ico-39', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-39', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-aiuto'],
     testo:'Non ricordi come si usa un\'app e vorresti una spiegazione. Quale icona cerchi?',
     opzioni:['Aiuto', 'Conferma', 'Attenzione', 'Caricamento'], opzioniIcone:true, corretta:0,
     spiega:'Il punto interrogativo (Aiuto) apre la guida dell\'app. Prima di chiedere, hai provato a cercare lì?' },
-  { id:'ico-40', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-40', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-modalità-aereo'],
     testo:'Sei in aereo e devi spegnere tutte le connessioni in un colpo solo. Quale icona attivi?',
     opzioni:['Modalità aereo', 'Wi-Fi', 'Bluetooth', 'AirDrop'], opzioniIcone:true, corretta:0,
     spiega:'La Modalità aereo disattiva tutte le connessioni.' },
-  { id:'ico-41', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-41', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-bluetooth'],
     testo:'Vuoi collegare le cuffie senza fili all\'iPad. Quale icona attivi nelle impostazioni?',
     opzioni:['Bluetooth', 'Wi-Fi', 'AirDrop', 'Modalità aereo'], opzioniIcone:true, corretta:0,
     spiega:'Il Bluetooth collega i dispositivi senza fili.' },
-  { id:'ico-42', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-42', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-videochiamata'],
     testo:'Il profilo scolastico blocca le videochiamate FaceTime. Quale icona le rappresenta?',
     opzioni:['Videochiamata', 'Mail', 'Messaggio', 'Telefono'], opzioniIcone:true, corretta:0,
     spiega:'La videocamera (Videochiamata) avvia FaceTime. Sul tuo iPad il profilo studente la blocca, come la fotocamera. Perché a scuola si comunica con la famiglia attraverso i canali della scuola?' },
-  { id:'ico-43', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-43', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-cerca'],
     testo:'In un documento lunghissimo devi trovare la parola \'vulcano\'. Quale icona usi?',
     opzioni:['Cerca', 'Filtra', 'Documento', 'Segnalibro'], opzioniIcone:true, corretta:0,
     spiega:'La lente (Cerca) trova una parola nel testo senza leggerlo tutto. Quanto tempo ti fa risparmiare?' },
-  { id:'ico-44', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-44', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-calendario'],
     testo:'Vuoi controllare in che giorno c\'è la gita. Quale icona apri?',
     opzioni:['Calendario', 'Notifiche', 'Informazione', 'Etichetta'], opzioniIcone:true, corretta:0,
     spiega:'Il Calendario mostra date ed eventi.' },
-  { id:'ico-45', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-45', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-annulla'],
     testo:'Hai cancellato per sbaglio una frase importante. Quale icona la riporta indietro?',
     opzioni:['Annulla', 'Ripeti', 'Aggiorna', 'Elimina'], opzioniIcone:true, corretta:0,
     spiega:'L\'icona Annulla riporta indietro l\'ultima azione.' },
-  { id:'ico-46', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-46', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-aggiorna'],
     testo:'Una pagina web si è caricata male e vedi tutto storto. Quale icona tocchi per ricaricarla?',
     opzioni:['Aggiorna', 'Annulla', 'Ripeti', 'Impostazioni'], opzioniIcone:true, corretta:0,
     spiega:'La freccia circolare (Aggiorna) ricarica la pagina. Che cosa provi se dopo l\'aggiornamento è ancora storta?' },
-  { id:'ico-47', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-47', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-airplay'],
     testo:'Quando l\'insegnante te lo chiede, vuoi mostrare il tuo lavoro sulla TV della classe senza fili. Quale icona usi?',
     opzioni:['AirPlay', 'AirDrop', 'Wi-Fi', 'Foto'], opzioniIcone:true, corretta:0,
     spiega:'AirPlay manda lo schermo dell\'iPad sulla TV. Perché si usa solo quando l\'insegnante lo chiede?' },
-  { id:'ico-48', area:'icone', tipo:'scelta', fonte:'icone',
+  { id:'ico-48', area:'icone', tipo:'scelta', fonte:'icone', gruppi:['i-incolla'],
     testo:'Hai copiato una frase e ora vuoi inserirla nel tuo documento. Quale icona usi?',
     opzioni:['Incolla', 'Copia', 'Condividi', 'Salva'], opzioniIcone:true, corretta:0,
     spiega:'L\'icona Incolla inserisce nel documento quello che avevi copiato negli appunti. Quale icona devi aver usato prima?' },
-  { id:'ico-49', area:'icone', tipo:'vf', fonte:'icone', icona:'Elimina',
+  { id:'ico-49', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-elimina'], icona:'Elimina',
     testo:'Questa icona serve a eliminare o cestinare un elemento.',
     corretta:true,
     spiega:'L\'affermazione è vera: il cestino (Elimina) serve a eliminare o cestinare un elemento.' },
-  { id:'ico-50', area:'icone', tipo:'vf', fonte:'icone', icona:'Cerca',
+  { id:'ico-50', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-cerca', 'i-aggiungi'], icona:'Cerca',
     testo:'Questa icona serve ad aggiungere un nuovo elemento.',
     corretta:false,
     spiega:'L\'affermazione è falsa: la lente serve a cercare. Per aggiungere si usa il segno più.' },
-  { id:'ico-51', area:'icone', tipo:'vf', fonte:'icone', icona:'Condividi',
+  { id:'ico-51', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-condividi'], icona:'Condividi',
     testo:'Questa icona apre il pannello di condivisione (AirDrop, Mail…).',
     corretta:true,
     spiega:'L\'affermazione è vera: la freccia che esce dal quadrato è l\'icona Condividi, che apre AirDrop, Mail e Messaggi.' },
-  { id:'ico-52', area:'icone', tipo:'vf', fonte:'icone', icona:'Blocca',
+  { id:'ico-52', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-blocca'], icona:'Blocca',
     testo:'Questo lucchetto chiuso indica che qualcosa è aperto e senza protezione.',
     corretta:false,
     spiega:'L\'affermazione è falsa: il lucchetto chiuso indica che qualcosa è bloccato e protetto. Come sarebbe disegnato il lucchetto «Sblocca»?' },
-  { id:'ico-53', area:'icone', tipo:'vf', fonte:'icone', icona:'Wi-Fi',
+  { id:'ico-53', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-wi-fi'], icona:'Wi-Fi',
     testo:'Questa icona indica la connessione a una rete senza fili.',
     corretta:true,
     spiega:'L\'affermazione è vera: gli archi a ventaglio sono il simbolo del Wi-Fi.' },
-  { id:'ico-54', area:'icone', tipo:'vf', fonte:'icone', icona:'Aggiorna',
+  { id:'ico-54', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-aggiorna'], icona:'Aggiorna',
     testo:'Questa icona ricarica o aggiorna la pagina.',
     corretta:true,
     spiega:'L\'affermazione è vera: la freccia circolare (Aggiorna) ricarica la pagina.' },
-  { id:'ico-55', area:'icone', tipo:'vf', fonte:'icone', icona:'Muto',
+  { id:'ico-55', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-muto', 'i-audio'], icona:'Muto',
     testo:'Questa icona serve ad alzare o abbassare il volume.',
     corretta:false,
     spiega:'L\'affermazione è falsa: l\'altoparlante barrato (Muto) toglie del tutto l\'audio. Per regolare il volume c\'è l\'icona Audio, con le onde.' },
-  { id:'ico-56', area:'icone', tipo:'vf', fonte:'icone', icona:'Preferito',
+  { id:'ico-56', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-preferito'], icona:'Preferito',
     testo:'Questa icona aggiunge un elemento ai preferiti.',
     corretta:true,
     spiega:'L\'affermazione è vera: la stella (Preferito) aggiunge un elemento ai preferiti.' },
-  { id:'ico-57', area:'icone', tipo:'vf', fonte:'icone', icona:'Microfono spento',
+  { id:'ico-57', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-microfono-spento'], icona:'Microfono spento',
     testo:'Questa icona attiva il microfono.',
     corretta:false,
     spiega:'L\'affermazione è falsa: il microfono barrato (Microfono spento) disattiva il microfono.' },
-  { id:'ico-58', area:'icone', tipo:'vf', fonte:'icone', icona:'Batteria',
+  { id:'ico-58', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-batteria'], icona:'Batteria',
     testo:'Questa icona mostra lo stato della batteria.',
     corretta:true,
     spiega:'L\'affermazione è vera: l\'icona Batteria indica quanta carica resta.' },
-  { id:'ico-59', area:'icone', tipo:'vf', fonte:'icone', icona:'Play',
+  { id:'ico-59', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-play'], icona:'Play',
     testo:'Questa icona mette in pausa la riproduzione.',
     corretta:false,
     spiega:'L\'affermazione è falsa: il triangolo avvia la riproduzione (Play); la pausa sono due barrette.' },
-  { id:'ico-60', area:'icone', tipo:'vf', fonte:'icone', icona:'Calendario',
+  { id:'ico-60', area:'icone', tipo:'vf', fonte:'icone', gruppi:['i-calendario'], icona:'Calendario',
     testo:'Questa icona apre il calendario o un evento.',
     corretta:true,
     spiega:'L\'affermazione è vera: il riquadro con i giorni è il Calendario.' },
 
   // ===== Area Gesti (fonte: iPad Ninja; zoom dalla lezione «Gesture» del Tutorial iPad) =====
+  // Tutto grafico (spec 2026-10-08-gesti-grafici): ogni domanda mostra il gesto disegnato;
+  // le parole («come» in GESTI) compaiono solo nel riscontro. Slide Over escluso: in iPadOS 26
+  // non si apre più trascinando dal bordo destro. gruppi 'g-<id>': domande sullo stesso gesto
+  // (una svelerebbe l'altra) mai nello stesso modulo.
   // Gesto illustrato -> azione
-  { id:'ges-01', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'home',
+  { id:'ges-01', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'home', gruppi:['g-home'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Tornare alla schermata Home', 'Aprire il selettore delle app', 'Aprire il Centro di Controllo', 'Passare all\'app successiva'], corretta:0,
-    spiega:'Lo scorrimento lungo dal bordo inferiore, senza fermarti, riporta alla Home. Se ti fermi a metà, che cosa compare invece? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-02', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'centro-ctrl',
+    spiega:'Lo scorrimento lungo dal bordo inferiore, senza fermarti, riporta alla schermata Home. Che cosa compare invece se ti fermi a metà?' },
+  { id:'ges-02', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'centro-ctrl', gruppi:['g-centro-ctrl'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Aprire il Centro di Controllo', 'Vedere le ultime notifiche', 'Aprire la ricerca Spotlight', 'Tornare alla schermata Home'], corretta:0,
-    spiega:'Dall\'angolo in alto a destra scende il Centro di Controllo. Che cosa trovi invece se parti dall\'angolo in alto a sinistra? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-03', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'notifiche',
+    spiega:'Scorrendo in basso dall\'angolo in alto a destra scende il Centro di Controllo. Che cosa trovi se parti dall\'angolo in alto a sinistra?' },
+  { id:'ges-03', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'notifiche', gruppi:['g-notifiche'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Vedere le ultime notifiche', 'Aprire il Centro di Controllo', 'Aprire la ricerca Spotlight', 'Mostrare il Dock dentro un\'app'], corretta:0,
-    spiega:'Dall\'alto a sinistra scendono le notifiche. Da quale angolo parte invece il Centro di Controllo? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-04', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'spotlight',
-    testo:'Che cosa ottieni con questo gesto?',
+    spiega:'Scorrendo in basso dall\'angolo in alto a sinistra scendono le notifiche. Da quale angolo parte invece il Centro di Controllo?' },
+  { id:'ges-04', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'spotlight', gruppi:['g-spotlight'],
+    testo:'Che cosa ottieni con questo gesto sulla schermata Home?',
     opzioni:['Aprire la ricerca Spotlight', 'Passare all\'app successiva', 'Aprire il Centro di Controllo', 'Aprire il selettore delle app'], corretta:0,
-    spiega:'Scorrendo in basso dal centro dello schermo, non dal bordo, si apre Spotlight. Perché conta il punto da cui parti? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-05', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'app-succ',
+    spiega:'Sulla schermata Home, scorrendo in basso dal centro e non dal bordo, si apre Spotlight. Perché conta il punto da cui parti?' },
+  { id:'ges-05', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'app-succ', gruppi:['g-app-succ'],
     testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Passare all\'app successiva', 'Tornare all\'app precedente', 'Annullare l\'ultima azione', 'Aprire un\'app in Slide Over'], corretta:0,
-    spiega:'Scorrendo a sinistra sulla barra in basso passi all\'app successiva. In che direzione scorri per tornare a quella di prima? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-06', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'app-prec',
+    opzioni:['Passare all\'app successiva', 'Tornare all\'app precedente', 'Annullare l\'ultima azione', 'Aprire il Centro di Controllo'], corretta:0,
+    spiega:'Scorrendo a sinistra sulla barra in basso passi all\'app successiva: funziona dopo che sei tornato indietro di almeno un\'app. In che direzione scorri per tornare a quella di prima?' },
+  { id:'ges-06', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'app-prec', gruppi:['g-app-prec'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Tornare all\'app precedente', 'Passare all\'app successiva', 'Ripristinare l\'azione annullata', 'Tornare alla schermata Home'], corretta:0,
-    spiega:'Scorrendo a destra sulla barra in basso torni all\'app precedente. Che differenza c\'è con lo stesso gesto fatto con tre dita? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-07', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'dock',
-    testo:'Che cosa ottieni con questo gesto?',
+    spiega:'Scorrendo a destra sulla barra in basso torni all\'app precedente. Che cosa cambia se fai lo stesso movimento con tre dita in mezzo allo schermo?' },
+  { id:'ges-07', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'dock', gruppi:['g-dock'],
+    testo:'Che cosa ottieni con questo gesto dentro un\'app?',
     opzioni:['Mostrare il Dock dentro un\'app', 'Aprire il selettore delle app', 'Vedere le ultime notifiche', 'Tornare all\'app precedente'], corretta:0,
-    spiega:'Uno scorrimento corto dal bordo inferiore mostra il Dock senza chiudere l\'app. Che cosa succede se scorri fino in alto? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-08', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'selettore',
+    spiega:'Uno scorrimento corto dal bordo inferiore mostra il Dock senza chiudere l\'app. Che cosa succede se scorri fino in alto?' },
+  { id:'ges-08', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'selettore', gruppi:['g-selettore'],
     testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Aprire il selettore delle app', 'Tornare alla schermata Home', 'Mostrare il Dock dentro un\'app', 'Aprire la ricerca Spotlight'], corretta:0,
-    spiega:'Scorri in alto dal fondo e fai una pausa: compaiono tutte le app aperte. Che cosa succede se non ti fermi? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-09', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'slide-over',
-    testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Aprire un\'app in Slide Over', 'Passare all\'app successiva', 'Annullare l\'ultima azione', 'Aprire il Centro di Controllo'], corretta:0,
-    spiega:'Trascinando dentro dal bordo destro apri un\'app in Slide Over, una finestra che galleggia sopra l\'altra. Quando può esserti utile? Esercitati in iPad Ninja, Livello 4 · Multitasking.' },
-  { id:'ges-10', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'doppio-tap',
+    opzioni:['Aprire il selettore delle app', 'Tornare alla schermata Home', 'Aprire la ricerca Spotlight', 'Vedere le ultime notifiche'], corretta:0,
+    spiega:'Scorri in alto dal fondo e fai una pausa: compaiono tutte le app aperte. Che cosa succede se non ti fermi?' },
+  { id:'ges-10', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'doppio-tap', gruppi:['g-doppio-tap'],
     testo:'Che cosa ottieni con questo gesto sul testo?',
-    opzioni:['Selezionare una sola parola', 'Selezionare un intero paragrafo', 'Far comparire menu e opzioni', 'Copiare il testo selezionato'], corretta:0,
-    spiega:'Due tocchi sul testo selezionano una parola. Quanti tocchi servono per l\'intero paragrafo? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-11', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'triplo-tap',
-    testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Selezionare un intero paragrafo', 'Selezionare una sola parola', 'Far comparire menu e opzioni', 'Copiare il testo selezionato'], corretta:0,
-    spiega:'Tre tocchi sul testo selezionano tutto il paragrafo. Che cosa selezioni con due tocchi soli? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-12', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'premi',
-    testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Far comparire menu e opzioni', 'Tornare all\'app precedente', 'Selezionare un intero paragrafo', 'Incollare il testo copiato'], corretta:0,
-    spiega:'Tenendo premuto compaiono menu e opzioni nascoste. Serve premere forte, o basta tenere il dito fermo? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-13', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'zoom',
-    testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Ingrandire una foto', 'Incollare il testo copiato', 'Copiare il testo selezionato', 'Far comparire menu e opzioni'], corretta:0,
-    spiega:'Allontanando due dita ingrandisci, avvicinandole rimpicciolisci. Che cosa cambia se le dita sono tre? Ripassa i gesti di base nella lezione «Gesture» del Tutorial iPad, poi allenati con iPad Ninja.' },
-  { id:'ges-14', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'copia3',
-    testo:'Che cosa ottieni con questo gesto?',
-    opzioni:['Copiare il testo selezionato', 'Incollare il testo copiato', 'Ingrandire una foto', 'Annullare l\'ultima azione'], corretta:0,
-    spiega:'Pizzicare con tre dita, chiudendole, copia. Che cosa succede se invece le apri? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-15', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'incolla3',
-    testo:'Che cosa ottieni con questo gesto?',
+    opzioni:['Selezionare una sola parola', 'Selezionare un intero paragrafo', 'Incollare il testo copiato', 'Tornare all\'app precedente'], corretta:0,
+    spiega:'Due tocchi sul testo selezionano una parola. Quanti tocchi servono per l\'intero paragrafo?' },
+  { id:'ges-11', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'triplo-tap', gruppi:['g-triplo-tap'],
+    testo:'Che cosa ottieni con questo gesto mentre leggi un testo?',
+    opzioni:['Selezionare un intero paragrafo', 'Selezionare una sola parola', 'Annullare l\'ultima azione', 'Copiare il testo selezionato'], corretta:0,
+    spiega:'Tre tocchi sul testo selezionano tutto il paragrafo. Che cosa selezioni con due tocchi soli?' },
+  { id:'ges-12', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'premi', gruppi:['g-premi'],
+    testo:'Che cosa ottieni con questo gesto su un\'icona?',
+    opzioni:['Far comparire menu e opzioni', 'Tornare all\'app precedente', 'Ingrandire una foto', 'Incollare il testo copiato'], corretta:0,
+    spiega:'Tenendo il dito fermo su un elemento compaiono menu e opzioni nascoste. Serve premere forte, o basta tenere il dito fermo?' },
+  { id:'ges-13', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'zoom', gruppi:['g-zoom'],
+    testo:'Che cosa ottieni con questo gesto su una foto?',
+    opzioni:['Ingrandire la foto', 'Incollare il testo copiato', 'Copiare il testo selezionato', 'Annullare l\'ultima azione'], corretta:0,
+    spiega:'Allontanando due dita ingrandisci, avvicinandole rimpicciolisci. Che cosa cambia se le dita sono tre?' },
+  { id:'ges-14', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'copia3', gruppi:['g-copia3'],
+    testo:'Che cosa ottieni con questo gesto sul testo selezionato?',
+    opzioni:['Copiare il testo selezionato', 'Incollare il testo copiato', 'Ingrandire il testo', 'Annullare l\'ultima azione'], corretta:0,
+    spiega:'Pizzicare con tre dita, chiudendole, copia il testo selezionato. Che cosa succede se invece le apri?' },
+  { id:'ges-15', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'incolla3', gruppi:['g-incolla3'],
+    testo:'Che cosa ottieni con questo gesto in un testo?',
     opzioni:['Incollare il testo copiato', 'Copiare il testo selezionato', 'Tornare alla schermata Home', 'Ripristinare l\'azione annullata'], corretta:0,
-    spiega:'Aprire tre dita, allargandole, incolla. Quale gesto devi aver fatto prima? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-16', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'annulla3',
+    spiega:'Aprendo tre dita, cioè allargandole, incolli. Quale gesto devi aver fatto prima?' },
+  { id:'ges-16', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'annulla3', gruppi:['g-annulla3'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Annullare l\'ultima azione', 'Ripristinare l\'azione annullata', 'Passare all\'app successiva', 'Copiare il testo selezionato'], corretta:0,
-    spiega:'Scorrendo a sinistra con tre dita annulli l\'ultima azione. In che direzione scorri per ripristinarla? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-17', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'ripristina3',
+    spiega:'Scorrendo a sinistra con tre dita annulli l\'ultima azione. In che direzione scorri per ripristinarla?' },
+  { id:'ges-17', area:'gesti', tipo:'scelta', fonte:'ninja', gesto:'ripristina3', gruppi:['g-ripristina3'],
     testo:'Che cosa ottieni con questo gesto?',
     opzioni:['Ripristinare l\'azione annullata', 'Annullare l\'ultima azione', 'Tornare all\'app precedente', 'Incollare il testo copiato'], corretta:0,
-    spiega:'Scorrendo a destra con tre dita ripristini quello che avevi annullato. Come lo avevi annullato? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  // Azione -> gesto descritto a parole (descrizioni di iPad Ninja)
-  { id:'ges-18', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi tornare alla schermata Home. Che gesto fai?',
-    opzioni:['Scorri in alto dal bordo inferiore', 'Scorri poco in alto dal bordo inferiore', 'Scorri in alto dal fondo e fai una pausa', 'Scorri in basso dal centro dello schermo'], corretta:0,
-    spiega:'Lo scorrimento lungo dal bordo inferiore, senza fermarti, riporta alla Home. Se ti fermi a metà, che cosa compare invece? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-19', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi aprire il Centro di Controllo. Che gesto fai?',
-    opzioni:['Scorri in basso dall\'angolo in alto a destra', 'Scorri in basso dall\'angolo in alto a sinistra', 'Scorri in basso dal centro dello schermo', 'Scorri in alto dal bordo inferiore'], corretta:0,
-    spiega:'Dall\'angolo in alto a destra scende il Centro di Controllo. Che cosa trovi invece se parti dall\'angolo in alto a sinistra? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-20', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi vedere le ultime notifiche. Che gesto fai?',
-    opzioni:['Scorri in basso dall\'angolo in alto a sinistra', 'Scorri in basso dall\'angolo in alto a destra', 'Scorri in basso dal centro dello schermo', 'Scorri poco in alto dal bordo inferiore'], corretta:0,
-    spiega:'Dall\'alto a sinistra scendono le notifiche. Da quale angolo parte invece il Centro di Controllo? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-21', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi cercare un\'app con Spotlight. Che gesto fai?',
-    opzioni:['Scorri in basso dal centro dello schermo', 'Scorri in basso dall\'angolo in alto a sinistra', 'Scorri in basso dall\'angolo in alto a destra', 'Scorri in alto dal bordo inferiore'], corretta:0,
-    spiega:'Scorrendo in basso dal centro dello schermo, non dal bordo, si apre Spotlight. Perché conta il punto da cui parti? Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-22', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi passare all\'app successiva. Che gesto fai?',
-    opzioni:['Scorri a sinistra sulla barra inferiore', 'Scorri a destra sulla barra inferiore', 'Scorri a sinistra con tre dita', 'Trascina dentro dal bordo destro'], corretta:0,
-    spiega:'Scorrendo a sinistra sulla barra in basso passi all\'app successiva. In che direzione scorri per tornare a quella di prima? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-23', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi tornare all\'app che usavi prima. Che gesto fai?',
-    opzioni:['Scorri a destra sulla barra inferiore', 'Scorri a sinistra sulla barra inferiore', 'Scorri a destra con tre dita', 'Scorri in alto dal bordo inferiore'], corretta:0,
-    spiega:'Scorrendo a destra sulla barra in basso torni all\'app precedente. Che differenza c\'è con lo stesso gesto fatto con tre dita? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-24', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi vedere il Dock senza uscire dall\'app. Che gesto fai?',
-    opzioni:['Scorri poco in alto dal bordo inferiore', 'Scorri in alto dal bordo inferiore', 'Scorri in alto dal fondo e fai una pausa', 'Scorri a sinistra sulla barra inferiore'], corretta:0,
-    spiega:'Uno scorrimento corto dal bordo inferiore mostra il Dock senza chiudere l\'app. Che cosa succede se scorri fino in alto? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-25', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi vedere tutte le app aperte (selettore). Che gesto fai?',
-    opzioni:['Scorri in alto dal fondo e fai una pausa', 'Scorri in alto dal bordo inferiore', 'Scorri poco in alto dal bordo inferiore', 'Scorri a destra sulla barra inferiore'], corretta:0,
-    spiega:'Scorri in alto dal fondo e fai una pausa: compaiono tutte le app aperte. Che cosa succede se non ti fermi? Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-26', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi aprire un\'app in Slide Over. Che gesto fai?',
-    opzioni:['Trascina dentro dal bordo destro', 'Scorri a sinistra sulla barra inferiore', 'Scorri a sinistra con tre dita', 'Scorri in basso dall\'angolo in alto a destra'], corretta:0,
-    spiega:'Trascinando dentro dal bordo destro apri un\'app in Slide Over, una finestra che galleggia sopra l\'altra. Quando può esserti utile? Esercitati in iPad Ninja, Livello 4 · Multitasking.' },
-  { id:'ges-27', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi selezionare una sola parola. Che gesto fai?',
-    opzioni:['Tocca due volte il testo (doppio tap)', 'Tocca tre volte il testo (triplo tap)', 'Tieni premuto il dito sul testo', 'Allontana due dita sullo schermo'], corretta:0,
-    spiega:'Due tocchi sul testo selezionano una parola. Quanti tocchi servono per l\'intero paragrafo? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-28', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi selezionare un intero paragrafo. Che gesto fai?',
-    opzioni:['Tocca tre volte il testo (triplo tap)', 'Tocca due volte il testo (doppio tap)', 'Tieni premuto il dito sul testo', 'Pizzica con tre dita (chiudi)'], corretta:0,
-    spiega:'Tre tocchi sul testo selezionano tutto il paragrafo. Che cosa selezioni con due tocchi soli? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-29', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi far comparire menu e opzioni nascoste di un elemento. Che gesto fai?',
-    opzioni:['Tieni premuto il dito sul testo', 'Scorri in basso dal centro dello schermo', 'Tocca tre volte il testo (triplo tap)', 'Allontana due dita sullo schermo'], corretta:0,
-    spiega:'Tenendo premuto compaiono menu e opzioni nascoste. Serve premere forte, o basta tenere il dito fermo? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-30', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi ingrandire una foto. Che gesto fai?',
-    opzioni:['Allontana due dita sullo schermo', 'Apri tre dita (allarga)', 'Pizzica con tre dita (chiudi)', 'Tieni premuto il dito sul testo'], corretta:0,
-    spiega:'Allontanando due dita ingrandisci, avvicinandole rimpicciolisci. Che cosa cambia se le dita sono tre? Ripassa i gesti di base nella lezione «Gesture» del Tutorial iPad, poi allenati con iPad Ninja.' },
-  { id:'ges-31', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi copiare il testo selezionato. Che gesto fai?',
-    opzioni:['Pizzica con tre dita (chiudi)', 'Apri tre dita (allarga)', 'Allontana due dita sullo schermo', 'Scorri a sinistra con tre dita'], corretta:0,
-    spiega:'Pizzicare con tre dita, chiudendole, copia. Che cosa succede se invece le apri? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-32', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi incollare il testo che hai copiato. Che gesto fai?',
-    opzioni:['Apri tre dita (allarga)', 'Pizzica con tre dita (chiudi)', 'Allontana due dita sullo schermo', 'Scorri a destra con tre dita'], corretta:0,
-    spiega:'Aprire tre dita, allargandole, incolla. Quale gesto devi aver fatto prima? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-33', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi annullare l\'ultima azione. Che gesto fai?',
-    opzioni:['Scorri a sinistra con tre dita', 'Scorri a destra con tre dita', 'Scorri a sinistra sulla barra inferiore', 'Pizzica con tre dita (chiudi)'], corretta:0,
-    spiega:'Scorrendo a sinistra con tre dita annulli l\'ultima azione. In che direzione scorri per ripristinarla? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-34', area:'gesti', tipo:'scelta', fonte:'ninja',
-    testo:'Vuoi ripristinare un\'azione che hai annullato. Che gesto fai?',
-    opzioni:['Scorri a destra con tre dita', 'Scorri a sinistra con tre dita', 'Scorri a destra sulla barra inferiore', 'Apri tre dita (allarga)'], corretta:0,
-    spiega:'Scorrendo a destra con tre dita ripristini quello che avevi annullato. Come lo avevi annullato? Esercitati in iPad Ninja, sezione «Testo a tre dita».' },
-  // Abbinamenti gesto a parole -> azione
-  { id:'ges-35', area:'gesti', tipo:'abbina', fonte:'ninja',
+    spiega:'Scorrendo a destra con tre dita ripristini quello che avevi annullato. Con quale gesto lo avevi annullato?' },
+  // Azione -> gesto disegnato (opzioniGesti: 4 mini-iPad, etichette neutre «Gesto 1-4»)
+  { id:'ges-18', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-home'],
+    testo:'Vuoi tornare alla schermata Home. Quale gesto fai?',
+    opzioni:['home', 'dock', 'selettore', 'spotlight'], corretta:0,
+    spiega:'Per la Home scorri in alto dal bordo inferiore fino in fondo, senza fermarti. Che cosa cambia se lo scorrimento è corto?' },
+  { id:'ges-19', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-centro-ctrl'],
+    testo:'Vuoi aprire il Centro di Controllo. Quale gesto fai?',
+    opzioni:['centro-ctrl', 'notifiche', 'spotlight', 'home'], corretta:0,
+    spiega:'Il Centro di Controllo scende dall\'angolo in alto a destra. Che cosa si apre dall\'angolo opposto?' },
+  { id:'ges-20', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-notifiche'],
+    testo:'Vuoi vedere le ultime notifiche. Quale gesto fai?',
+    opzioni:['notifiche', 'centro-ctrl', 'home', 'app-prec'], corretta:0,
+    spiega:'Le notifiche scendono dall\'angolo in alto a sinistra. Come ricordi quale angolo apre il Centro di Controllo?' },
+  { id:'ges-21', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-spotlight'],
+    testo:'Sei nella schermata Home e vuoi cercare un\'app con Spotlight. Quale gesto fai?',
+    opzioni:['spotlight', 'centro-ctrl', 'home', 'app-succ'], corretta:0,
+    spiega:'Spotlight si apre scorrendo in basso dal centro della schermata Home, lontano dai bordi. Perché un gesto dall\'angolo apre un\'altra cosa?' },
+  { id:'ges-22', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-app-succ'],
+    testo:'Vuoi passare all\'app successiva. Quale gesto fai?',
+    opzioni:['app-succ', 'app-prec', 'annulla3', 'home'], corretta:0,
+    spiega:'Per l\'app successiva scorri a sinistra con un dito sulla barra in basso; funziona dopo che sei tornato indietro di almeno un\'app. Che cosa ottieni con lo stesso movimento fatto con tre dita in mezzo allo schermo?' },
+  { id:'ges-23', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-app-prec'],
+    testo:'Vuoi tornare all\'app che usavi prima. Quale gesto fai?',
+    opzioni:['app-prec', 'app-succ', 'ripristina3', 'dock'], corretta:0,
+    spiega:'Per tornare all\'app di prima scorri a destra con un dito sulla barra in basso. Che cosa conta di più: la direzione o il punto da cui parti?' },
+  { id:'ges-24', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-dock'],
+    testo:'Vuoi vedere il Dock restando dentro l\'app che stai usando. Quale gesto fai?',
+    opzioni:['dock', 'home', 'app-succ', 'centro-ctrl'], corretta:0,
+    spiega:'Uno scorrimento corto dal bordo inferiore mostra il Dock e l\'app resta aperta. Che cosa succede se lo scorrimento è lungo?' },
+  { id:'ges-25', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-selettore'],
+    testo:'Vuoi vedere tutte le app aperte (selettore delle app). Quale gesto fai?',
+    opzioni:['selettore', 'home', 'dock', 'app-prec'], corretta:0,
+    spiega:'Il selettore delle app si apre scorrendo in alto dal fondo e fermandoti un attimo a metà. Quale dettaglio del disegno indica la pausa?' },
+  { id:'ges-27', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-doppio-tap'],
+    testo:'Vuoi selezionare una sola parola in un testo che stai scrivendo. Quale gesto fai?',
+    opzioni:['doppio-tap', 'triplo-tap', 'zoom', 'copia3'], corretta:0,
+    spiega:'Due tocchi rapidi sulla parola la selezionano. Che cosa selezioni con un tocco in più?' },
+  { id:'ges-28', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-triplo-tap'],
+    testo:'Vuoi selezionare un intero paragrafo. Quale gesto fai?',
+    opzioni:['triplo-tap', 'doppio-tap', 'zoom', 'incolla3'], corretta:0,
+    spiega:'Tre tocchi rapidi sul testo selezionano tutto il paragrafo. Come conti i tocchi nel disegno?' },
+  { id:'ges-29', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-premi'],
+    testo:'Vuoi far comparire menu e opzioni nascoste di un\'icona. Quale gesto fai?',
+    opzioni:['premi', 'zoom', 'home', 'annulla3'], corretta:0,
+    spiega:'Tieni il dito fermo sull\'icona finché compare il menu. Serve premere forte o basta aspettare?' },
+  { id:'ges-30', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-zoom'],
+    testo:'Vuoi ingrandire una foto. Quale gesto fai?',
+    opzioni:['zoom', 'annulla3', 'copia3', 'premi'], corretta:0,
+    spiega:'Per ingrandire allontani due dita sulla foto; avvicinandole rimpicciolisci. Quante dita servono?' },
+  { id:'ges-31', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-copia3'],
+    testo:'Vuoi copiare il testo selezionato. Quale gesto fai?',
+    opzioni:['copia3', 'incolla3', 'zoom', 'annulla3'], corretta:0,
+    spiega:'Per copiare pizzichi con tre dita, chiudendole verso il centro. Come ricordi che aprirle fa il contrario?' },
+  { id:'ges-32', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-incolla3'],
+    testo:'Vuoi incollare il testo che hai copiato. Quale gesto fai?',
+    opzioni:['incolla3', 'copia3', 'zoom', 'ripristina3'], corretta:0,
+    spiega:'Per incollare apri tre dita, allargandole dal centro. In che cosa si distingue dal gesto per ingrandire una foto?' },
+  { id:'ges-33', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-annulla3'],
+    testo:'Vuoi annullare l\'ultima azione. Quale gesto fai?',
+    opzioni:['annulla3', 'ripristina3', 'app-succ', 'copia3'], corretta:0,
+    spiega:'Per annullare scorri a sinistra con tre dita in mezzo allo schermo. Che cosa succede se scorri a sinistra con un dito sulla barra in basso?' },
+  { id:'ges-34', area:'gesti', tipo:'scelta', fonte:'ninja', opzioniGesti:true, gruppi:['g-ripristina3'],
+    testo:'Vuoi ripristinare un\'azione che hai annullato. Quale gesto fai?',
+    opzioni:['ripristina3', 'annulla3', 'app-prec', 'incolla3'], corretta:0,
+    spiega:'Per ripristinare scorri a destra con tre dita. Che cosa hanno in comune annullare e ripristinare, e che cosa li distingue?' },
+  // Abbinamenti: gesto disegnato (sinistra, «Gesto A-D») -> azione a parole (sxGesti)
+  { id:'ges-35', area:'gesti', tipo:'abbina', fonte:'ninja', sxGesti:true, gruppi:['g-home', 'g-dock', 'g-selettore', 'g-app-succ'],
     testo:'Abbina ogni gesto a quello che ottieni.',
     coppie:[
-      ['Scorri in alto dal bordo inferiore', 'Tornare alla schermata Home'],
-      ['Scorri poco in alto dal bordo inferiore', 'Mostrare il Dock dentro un\'app'],
-      ['Scorri in alto dal fondo e fai una pausa', 'Aprire il selettore delle app'],
-      ['Scorri a sinistra sulla barra inferiore', 'Passare all\'app successiva'] ],
-    spiega:'Tutti questi gesti partono dal fondo dello schermo: cambia quanto scorri, se ti fermi e in che direzione. Quale dettaglio distingue la Home dal selettore delle app? Esercitati in iPad Ninja, Livelli 1 e 3.' },
-  { id:'ges-36', area:'gesti', tipo:'abbina', fonte:'ninja',
+      ['home', 'Tornare alla schermata Home'],
+      ['dock', 'Mostrare il Dock dentro un\'app'],
+      ['selettore', 'Aprire il selettore delle app'],
+      ['app-succ', 'Passare all\'app successiva'] ],
+    spiega:'Tutti questi gesti partono dal fondo dello schermo: cambia quanto scorri, se ti fermi e in che direzione. Quale dettaglio distingue la Home dal selettore delle app?' },
+  { id:'ges-36', area:'gesti', tipo:'abbina', fonte:'ninja', sxGesti:true, gruppi:['g-centro-ctrl', 'g-notifiche', 'g-spotlight', 'g-zoom'],
     testo:'Abbina ogni gesto a quello che ottieni.',
     coppie:[
-      ['Scorri in basso dall\'angolo in alto a destra', 'Aprire il Centro di Controllo'],
-      ['Scorri in basso dall\'angolo in alto a sinistra', 'Vedere le ultime notifiche'],
-      ['Scorri in basso dal centro dello schermo', 'Aprire la ricerca Spotlight'],
-      ['Trascina dentro dal bordo destro', 'Aprire un\'app in Slide Over'] ],
-    spiega:'Il punto di partenza decide che cosa si apre: angolo destro, angolo sinistro, centro dello schermo o bordo destro. Quale di questi gesti usi più spesso? Esercitati in iPad Ninja, Livelli 1 e 4.' },
-  { id:'ges-37', area:'gesti', tipo:'abbina', fonte:'ninja',
+      ['centro-ctrl', 'Aprire il Centro di Controllo'],
+      ['notifiche', 'Vedere le ultime notifiche'],
+      ['spotlight', 'Aprire Spotlight dalla schermata Home'],
+      ['zoom', 'Ingrandire una foto'] ],
+    spiega:'Il punto di partenza decide che cosa si apre: angolo destro, angolo sinistro o centro dello schermo; con due dita invece ingrandisci. Quale di questi gesti usi più spesso?' },
+  { id:'ges-37', area:'gesti', tipo:'abbina', fonte:'ninja', sxGesti:true, gruppi:['g-copia3', 'g-incolla3', 'g-annulla3', 'g-ripristina3'],
     testo:'Abbina ogni gesto a quello che ottieni.',
     coppie:[
-      ['Pizzica con tre dita (chiudi)', 'Copiare il testo selezionato'],
-      ['Apri tre dita (allarga)', 'Incollare il testo copiato'],
-      ['Scorri a sinistra con tre dita', 'Annullare l\'ultima azione'],
-      ['Scorri a destra con tre dita', 'Ripristinare l\'azione annullata'] ],
-    spiega:'Con tre dita lavori sul testo: chiudi per copiare, apri per incollare, a sinistra annulli, a destra ripristini. Quale ti farebbe risparmiare più tempo? Ripassali in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-38', area:'gesti', tipo:'abbina', fonte:'ninja',
+      ['copia3', 'Copiare il testo selezionato'],
+      ['incolla3', 'Incollare il testo copiato'],
+      ['annulla3', 'Annullare l\'ultima azione'],
+      ['ripristina3', 'Ripristinare l\'azione annullata'] ],
+    spiega:'Con tre dita lavori sul testo: chiudi per copiare, apri per incollare, a sinistra annulli, a destra ripristini. Quale ti farebbe risparmiare più tempo?' },
+  { id:'ges-38', area:'gesti', tipo:'abbina', fonte:'ninja', sxGesti:true, gruppi:['g-doppio-tap', 'g-triplo-tap', 'g-premi', 'g-zoom'],
     testo:'Abbina ogni gesto a quello che ottieni.',
     coppie:[
-      ['Tocca due volte il testo (doppio tap)', 'Selezionare una sola parola'],
-      ['Tocca tre volte il testo (triplo tap)', 'Selezionare un intero paragrafo'],
-      ['Tieni premuto il dito sul testo', 'Far comparire menu e opzioni'],
-      ['Allontana due dita sullo schermo', 'Ingrandire una foto'] ],
-    spiega:'Il numero di tocchi e di dita cambia il risultato: due tocchi per una parola, tre per il paragrafo, il dito fermo per le opzioni, due dita per ingrandire. Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-39', area:'gesti', tipo:'abbina', fonte:'ninja',
+      ['doppio-tap', 'Selezionare una sola parola'],
+      ['triplo-tap', 'Selezionare un intero paragrafo'],
+      ['premi', 'Far comparire menu e opzioni'],
+      ['zoom', 'Ingrandire una foto'] ],
+    spiega:'Il numero di tocchi e di dita cambia il risultato: due tocchi per una parola, tre per il paragrafo, il dito fermo per le opzioni, due dita per ingrandire. Quale dettaglio guardi per primo nel disegno?' },
+  { id:'ges-39', area:'gesti', tipo:'abbina', fonte:'ninja', sxGesti:true, gruppi:['g-app-prec', 'g-app-succ', 'g-annulla3', 'g-ripristina3'],
     testo:'Abbina ogni gesto a quello che ottieni.',
     coppie:[
-      ['Scorri a destra sulla barra inferiore', 'Tornare all\'app precedente'],
-      ['Scorri a sinistra sulla barra inferiore', 'Passare all\'app successiva'],
-      ['Scorri a sinistra con tre dita', 'Annullare l\'ultima azione'],
-      ['Scorri a destra con tre dita', 'Ripristinare l\'azione annullata'] ],
-    spiega:'Destra e sinistra servono sia per cambiare app sia per annullare: la differenza è dove scorri (sulla barra in basso) e con quante dita (tre). Esercitati in iPad Ninja, Livello 3 e sezione «Testo a tre dita».' },
-  // Vero o falso sui dettagli
-  { id:'ges-40', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Per aprire il selettore delle app scorri in alto dal fondo e ti fermi a metà, con una piccola pausa.',
+      ['app-prec', 'Tornare all\'app precedente'],
+      ['app-succ', 'Passare all\'app successiva'],
+      ['annulla3', 'Annullare l\'ultima azione'],
+      ['ripristina3', 'Ripristinare l\'azione annullata'] ],
+    spiega:'Destra e sinistra servono sia per cambiare app sia per annullare: la differenza è dove scorri (sulla barra in basso) e con quante dita (tre). Come fai a non confonderli?' },
+  // Vero o falso con il gesto disegnato
+  { id:'ges-40', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'selettore', gruppi:['g-selettore'],
+    testo:'Con questo gesto apri il selettore delle app.',
     corretta:true,
-    spiega:'È la pausa a fare la differenza: senza fermarti torni alla Home. Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-41', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Il Centro di Controllo si apre scorrendo in basso dall\'angolo in alto a sinistra.',
+    spiega:'Scorrendo in alto dal fondo con una piccola pausa a metà compaiono tutte le app aperte. Che cosa succede se non ti fermi?' },
+  { id:'ges-41', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'notifiche', gruppi:['g-notifiche', 'g-centro-ctrl'],
+    testo:'Questo gesto apre il Centro di Controllo.',
     corretta:false,
-    spiega:'Il Centro di Controllo scende dall\'angolo in alto a destra; da sinistra arrivano le notifiche. Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-42', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Sullo schermo dell\'iPad basta un tocco leggero: non serve premere forte.',
-    corretta:true,
-    spiega:'L\'iPad sente anche un tocco leggero: la delicatezza funziona meglio della forza. Perché premere forte non aiuta? Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-43', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Con un doppio tap su una parola selezioni l\'intero paragrafo.',
+    spiega:'Il gesto parte dall\'angolo in alto a sinistra: da lì scendono le notifiche, mentre il Centro di Controllo scende da destra. Come ricordi quale angolo usare?' },
+  { id:'ges-42', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'premi', gruppi:['g-premi'],
+    testo:'Per fare questo gesto devi premere forte sullo schermo.',
     corretta:false,
-    spiega:'Il doppio tap seleziona una parola; per il paragrafo servono tre tocchi. Esercitati in iPad Ninja, Livello 5 · Testo.' },
-  { id:'ges-44', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Scorrendo a sinistra con tre dita annulli l\'ultima azione.',
-    corretta:true,
-    spiega:'L\'affermazione è vera: tre dita a sinistra annullano, tre dita a destra ripristinano. Ripassali in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-45', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Per tornare all\'app che usavi prima scorri a destra sulla barra inferiore.',
-    corretta:true,
-    spiega:'A destra sulla barra torni all\'app precedente, a sinistra passi alla successiva. Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-46', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Per vedere il Dock mentre usi un\'app devi prima tornare alla schermata Home.',
+    spiega:'Basta tenere il dito fermo: l\'iPad sente anche un tocco leggero. Perché premere forte non aiuta?' },
+  { id:'ges-43', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'doppio-tap', gruppi:['g-doppio-tap', 'g-triplo-tap'],
+    testo:'Questo gesto sul testo seleziona l\'intero paragrafo.',
     corretta:false,
-    spiega:'Basta scorrere poco in alto dal bordo inferiore: il Dock compare sopra l\'app aperta. Esercitati in iPad Ninja, Livello 3 · Cambiare app.' },
-  { id:'ges-47', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Pizzicando con tre dita, cioè chiudendole, incolli il testo copiato.',
-    corretta:false,
-    spiega:'Chiudere tre dita copia; per incollare le apri. Ripassali in iPad Ninja, sezione «Testo a tre dita».' },
-  { id:'ges-48', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Allontanando due dita su una foto la ingrandisci.',
+    spiega:'Due tocchi selezionano una sola parola; per il paragrafo servono tre tocchi. Come conti i tocchi nel disegno?' },
+  { id:'ges-44', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'annulla3', gruppi:['g-annulla3'],
+    testo:'Questo gesto annulla l\'ultima azione.',
     corretta:true,
-    spiega:'Allontanando le dita ingrandisci, avvicinandole rimpicciolisci. Ripassalo nella lezione «Gesture» del Tutorial iPad.' },
-  { id:'ges-49', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Spotlight si apre scorrendo in basso dal centro dello schermo.',
+    spiega:'Scorrendo a sinistra con tre dita annulli l\'ultima azione. Quando ti è capitato di voler tornare indietro?' },
+  { id:'ges-45', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'app-prec', gruppi:['g-app-prec'],
+    testo:'Con questo gesto torni all\'app che usavi prima.',
     corretta:true,
-    spiega:'Spotlight scende dal centro, non dagli angoli. Esercitati in iPad Ninja, Livello 1 · Muoversi.' },
-  { id:'ges-50', area:'gesti', tipo:'vf', fonte:'ninja',
-    testo:'Per aprire un\'app in Slide Over trascini dentro dal bordo sinistro dello schermo.',
+    spiega:'Scorrendo a destra con un dito sulla barra in basso torni all\'app che usavi prima. Quando ti serve passare velocemente da un\'app all\'altra?' },
+  { id:'ges-46', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'dock', gruppi:['g-dock', 'g-home'],
+    testo:'Dentro un\'app, questo gesto ti riporta alla schermata Home.',
     corretta:false,
-    spiega:'Slide Over arriva dal bordo destro. Esercitati in iPad Ninja, Livello 4 · Multitasking.' },
+    spiega:'La freccia è corta: uno scorrimento breve mostra il Dock e l\'app resta aperta. Come deve essere lo scorrimento per tornare alla Home?' },
+  { id:'ges-47', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'copia3', gruppi:['g-copia3', 'g-incolla3'],
+    testo:'Questo gesto incolla il testo copiato.',
+    corretta:false,
+    spiega:'Le tre dita si chiudono verso il centro: è il gesto per copiare. Per incollare, come si muovono le dita?' },
+  { id:'ges-48', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'zoom', gruppi:['g-zoom'],
+    testo:'Questo gesto ingrandisce una foto.',
+    corretta:true,
+    spiega:'Allontanando due dita ingrandisci, avvicinandole rimpicciolisci. In quali altre app ti serve ingrandire?' },
+  { id:'ges-49', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'spotlight', gruppi:['g-spotlight'],
+    testo:'Sulla schermata Home, questo gesto apre la ricerca Spotlight.',
+    corretta:true,
+    spiega:'Spotlight scende dal centro della schermata Home, non dagli angoli. Che cosa cerchi più spesso sull\'iPad?' },
+  { id:'ges-50', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'home', gruppi:['g-home', 'g-selettore'],
+    testo:'Questo gesto apre il selettore delle app.',
+    corretta:false,
+    spiega:'Nel disegno non c\'è la pausa: lo scorrimento lungo senza fermarti riporta alla schermata Home. Dove compare la pausa nel gesto del selettore?' },
+  { id:'ges-51', area:'gesti', tipo:'vf', fonte:'ninja', gesto:'ripristina3', gruppi:['g-ripristina3'],
+    testo:'Questo gesto ripristina un\'azione che avevi annullato.',
+    corretta:true,
+    spiega:'Scorrendo a destra con tre dita rifai l\'azione che avevi annullato. Perché può servire rifare un\'azione?' },
 
   // ===== LESSICO (fonte: Glossario iPad) =====
   { id:'lex-01', area:'lessico', tipo:'scelta', fonte:'glossario',
@@ -1371,7 +1384,7 @@ const BANCA = [
     testo:'Come si chiama il pannello di scorciatoie per volume, luminosità, Wi-Fi e torcia?',
     opzioni:['Centro di Controllo', 'Schermata di blocco', 'Azioni rapide', 'Barra dei menu'], corretta:0,
     spiega:'Il Centro di Controllo raccoglie le scorciatoie più usate: volume, luminosità, Wi-Fi, torcia. Quale di queste scorciatoie ti serve più spesso in classe?' },
-  { id:'lex-03', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-03', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['schermata-blocco'],
     testo:'Che cos\'è la Schermata di blocco?',
     opzioni:['Ciò che vedi appena accendi, con ora e avvisi', 'Un riquadro che mostra le informazioni di un\'app', 'La vista con tutte le app aperte in piccolo', 'Il pannello con volume, luminosità e torcia'], corretta:0,
     spiega:'La Schermata di blocco è la prima cosa che vedi quando accendi l\'iPad: mostra l\'ora e gli avvisi, e puoi cambiarle sfondo e stile. Che cosa compare sulla tua?' },
@@ -1395,7 +1408,7 @@ const BANCA = [
     testo:'Come si chiama la versione piccola dei tasti su schermo, che sposti dove vuoi e usi facendo scorrere un dito tra le lettere?',
     opzioni:['Tastiera flottante', 'Tastiera su schermo', 'Testo predittivo', 'Sostituzioni testo'], corretta:0,
     spiega:'La Tastiera flottante è una tastiera rimpicciolita che puoi spostare sullo schermo; ci scrivi anche facendo scivolare il dito da una lettera all\'altra. Quando potrebbe esserti utile?' },
-  { id:'lex-09', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-09', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['icloud-file'],
     testo:'Che cos\'è iCloud?',
     opzioni:['Uno spazio online che salva e condivide i tuoi dati', 'Un\'app per disegnare idee insieme ai compagni', 'Un collegamento senza fili per cuffie e tastiere', 'La memoria interna che hai dentro l\'iPad'], corretta:0,
     spiega:'iCloud è uno spazio online: salva foto, file e contatti e li condivide con gli altri tuoi dispositivi Apple. Perché è utile avere i dati anche online?' },
@@ -1407,11 +1420,11 @@ const BANCA = [
     testo:'Che cosa indica la parola Continuity?',
     opzioni:['Le funzioni che collegano i dispositivi Apple', 'Una copia di sicurezza di tutti i dati dell\'iPad', 'Il servizio di messaggi Apple con le bolle azzurre', 'Una modalità che riduce i consumi della batteria'], corretta:0,
     spiega:'Continuity è l\'insieme delle funzioni che fanno collaborare iPad, iPhone e Mac, come gli appunti condivisi. Quali dispositivi Apple ci sono a casa tua?' },
-  { id:'lex-12', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-12', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['trascrizioni'],
     testo:'Come si chiama la funzione che mostra scritto sullo schermo quello che si sente in un video o in una chiamata, utile a chi non sente bene?',
     opzioni:['Trascrizioni live', 'Testo predittivo', 'Traduzione in tempo reale', 'Sostituzioni testo'], corretta:0,
     spiega:'Le Trascrizioni live scrivono sullo schermo le parole che vengono pronunciate, nella stessa lingua. Chi potrebbe trovarle davvero importanti?' },
-  { id:'lex-13', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-13', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['trascrizioni'],
     testo:'Come si chiama la funzione che traduce le frasi mentre una persona parla o scrive in un\'altra lingua?',
     opzioni:['Traduzione in tempo reale', 'Trascrizioni live', 'Testo predittivo', 'Registrazione schermo'], corretta:0,
     spiega:'La Traduzione in tempo reale traduce le frasi mentre parli o scrivi, così ci si capisce anche con lingue diverse. Le Trascrizioni live invece scrivono, ma non traducono. Quale lingua ti piacerebbe capire meglio?' },
@@ -1435,7 +1448,7 @@ const BANCA = [
     testo:'Come si chiama il negozio ufficiale dove scarichi e aggiorni i programmi dell\'iPad?',
     opzioni:['App Store', 'Libreria app', 'App clip', 'File'], corretta:0,
     spiega:'L\'App Store è il negozio ufficiale da cui si scaricano e si aggiornano le app. La Libreria app invece raccoglie quelle già installate. A scuola, che cosa devi fare prima di scaricare?' },
-  { id:'lex-19', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-19', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['icloud-file'],
     testo:'In quale app ritrovi documenti, PDF e lavori salvati, ordinati in cartelle?',
     opzioni:['File', 'Promemoria', 'Calcolatrice', 'Freeform'], corretta:0,
     spiega:'L\'app File raccoglie tutti i documenti, sia sull\'iPad sia su iCloud, ordinati in cartelle. Come organizzeresti le cartelle per le materie?' },
@@ -1451,7 +1464,7 @@ const BANCA = [
     testo:'Nella versione inglese dell\'iPad leggi «Low Power Mode». Come si chiama in italiano?',
     opzioni:['Risparmio energetico', 'Non disturbare', 'Full immersion', 'Tempo di utilizzo'], corretta:0,
     spiega:'«Low Power Mode» è il Risparmio energetico: riduce i consumi per far durare di più la batteria quando è quasi scarica. Quale parola inglese ti ha aiutato a capirlo?' },
-  { id:'lex-23', area:'lessico', tipo:'scelta', fonte:'glossario',
+  { id:'lex-23', area:'lessico', tipo:'scelta', fonte:'glossario', gruppi:['schermata-blocco'],
     testo:'Nella versione inglese dell\'iPad leggi «Lock Screen». Come si chiama in italiano?',
     opzioni:['Schermata di blocco', 'Schermata Home', 'Centro di Controllo', 'Libreria app'], corretta:0,
     spiega:'«Lock Screen» è la Schermata di blocco: «lock» vuol dire chiudere a chiave, bloccare. È la schermata con ora e avvisi che vedi appena accendi. Come si dice invece «Home Screen»?' },
@@ -1487,7 +1500,7 @@ const BANCA = [
       ['Tastiera su schermo', 'I pulsanti con le lettere che compaiono quando devi scrivere'],
       ['Dettatura', 'Parli e l\'iPad scrive al posto tuo'] ],
     spiega:'Con la penna, con i tasti o con la voce: l\'iPad offre più modi per scrivere. L\'Hover funziona solo su alcuni modelli di iPad e di Pencil. Quale modo preferisci tu?' },
-  { id:'lex-29', area:'lessico', tipo:'abbina', fonte:'glossario',
+  { id:'lex-29', area:'lessico', tipo:'abbina', fonte:'glossario', gruppi:['icloud-file'],
     testo:'Abbina ogni termine del gruppo «Account e iCloud» alla sua definizione.',
     coppie:[
       ['Apple Account', 'Il profilo personale con cui entri nei servizi e negli acquisti dell\'iPad'],
@@ -1551,7 +1564,7 @@ const BANCA = [
     testo:'La Libreria app cancella le app che non usi per fare ordine nella schermata Home.',
     corretta:false,
     spiega:'La Libreria app ordina le app in gruppi senza cancellare niente: la Home resta più pulita. Dove cercheresti un\'app che non trovi nelle pagine?' },
-  { id:'lex-40', area:'lessico', tipo:'vf', fonte:'glossario',
+  { id:'lex-40', area:'lessico', tipo:'vf', fonte:'glossario', gruppi:['icloud-file'],
     testo:'Nell\'app File vedi solo i documenti salvati sull\'iPad: quelli su iCloud non compaiono.',
     corretta:false,
     spiega:'L\'app File mostra sia i documenti sull\'iPad sia quelli su iCloud Drive, sempre aggiornati. Perché è comodo trovarli tutti nello stesso posto?' },
@@ -1581,7 +1594,7 @@ const BANCA = [
     testo:'Metti in ordine i passi per creare una nota nuova.',
     passi:['Apri l\'app Note', 'Tocca l\'icona matita su foglio', 'Scrivi i tuoi appunti'],
     spiega:'Si apre Note, si tocca l\'icona della matita su un foglio e si comincia a scrivere. Dove si trova quell\'icona nella tua app Note?' },
-  { id:'pro-05', area:'procedure', tipo:'ordina', fonte:'tutorial',
+  { id:'pro-05', area:'procedure', tipo:'ordina', fonte:'tutorial', gruppi:['promemoria'],
     testo:'Metti in ordine i passi per creare un promemoria che ti avvisi a una certa data.',
     passi:['Apri Promemoria', 'Tocca +', 'Scrivi che cosa devi ricordare', 'Apri i dettagli e aggiungi data e ora'],
     spiega:'Prima crei il promemoria con + e lo scrivi; solo dopo apri i suoi dettagli per aggiungere data e ora dell\'avviso. Perché i dettagli si aggiungono a un promemoria che esiste già?' },
@@ -1589,7 +1602,7 @@ const BANCA = [
     testo:'Metti in ordine i passi per aggiungere un evento nel Calendario.',
     passi:['Apri Calendario', 'Tocca +', 'Compila titolo, giorno e orario', 'Conferma per salvare l\'evento'],
     spiega:'Con + si apre la scheda del nuovo evento; dopo averla compilata, confermi e l\'evento compare nel calendario. Quale impegno della settimana potresti segnare?' },
-  { id:'pro-07', area:'procedure', tipo:'ordina', fonte:'tutorial',
+  { id:'pro-07', area:'procedure', tipo:'ordina', fonte:'tutorial', gruppi:['cartelle'],
     testo:'Metti in ordine i passi per creare una cartella nell\'app File.',
     passi:['Apri l\'app File', 'Entra nella posizione, per esempio iCloud Drive', 'Scegli Nuova cartella', 'Scrivi il nome della cartella', 'Conferma il nome'],
     spiega:'Si sceglie prima dove creare la cartella, poi si usa il comando Nuova cartella, si scrive il nome e si conferma. Quali cartelle ti servono per le materie?' },
@@ -1637,7 +1650,7 @@ const BANCA = [
     testo:'Quale nome rende più facile ritrovare un file?',
     opzioni:['storia-roma', 'documento1', 'senza titolo', 'aaa-ultimo'], corretta:0,
     spiega:'Un nome chiaro come «storia-roma» dice subito materia e argomento, così lo ritrovi anche dopo mesi. Che nome daresti alla ricerca di scienze sulle piante?' },
-  { id:'pro-19', area:'procedure', tipo:'scelta', fonte:'tutorial',
+  { id:'pro-19', area:'procedure', tipo:'scelta', fonte:'tutorial', gruppi:['cartelle'],
     testo:'Come conviene organizzare i lavori di scuola nell\'app File?',
     opzioni:['Una cartella per ogni materia', 'Tutti i file sparsi, senza cartelle', 'Un\'unica cartella chiamata «varie»', 'Una cartella per ogni mese dell\'anno'], corretta:0,
     spiega:'Una cartella per materia funziona come i quaderni: sai subito dove cercare. Quante cartelle ti servirebbero quest\'anno?' },
@@ -1725,7 +1738,7 @@ const BANCA = [
     testo:'Con Spotlight puoi cercare non solo le app, ma anche file e informazioni.',
     corretta:true,
     spiega:'Spotlight trova app, file e informazioni da un unico campo di ricerca. Che cosa proveresti a cercare oltre a un\'app?' },
-  { id:'pro-41', area:'procedure', tipo:'scelta', fonte:'tutorial',
+  { id:'pro-41', area:'procedure', tipo:'scelta', fonte:'tutorial', gruppi:['promemoria'],
     testo:'Hai creato un promemoria. Dove aggiungi data e ora dell\'avviso?',
     opzioni:['Toccando (i) accanto al promemoria', 'Tenendo premuta l\'icona dell\'app', 'Nel Centro di Controllo', 'In Impostazioni, alla voce Generali'], corretta:0,
     spiega:'Accanto a ogni promemoria c\'è il pulsante (i): da lì aggiungi data, ora e altri dettagli. Quale compito ti conviene segnare con un avviso?' },
@@ -1767,7 +1780,7 @@ const BANCA = [
     testo:'Metti in ordine i passi per fare subito un backup su iCloud.',
     passi:['Apri Impostazioni', 'Tocca il tuo nome', 'Tocca iCloud', 'Tocca Backup iCloud', 'Tocca Esegui backup adesso'],
     spiega:'Il backup su iCloud si trova sotto il tuo nome, nella voce iCloud. Perché il backup si trova insieme al tuo account?' },
-  { id:'sic-06', area:'sicurezza', tipo:'abbina', fonte:'glossario',
+  { id:'sic-06', area:'sicurezza', tipo:'abbina', fonte:'glossario', gruppi:['bluetooth'],
     testo:'Abbina ogni connessione a che cosa fa.',
     coppie:[
       ['Wi-Fi', 'Collega a internet tramite una rete vicina'],
@@ -1775,7 +1788,7 @@ const BANCA = [
       ['AirDrop', 'Invia file ai dispositivi Apple vicini'],
       ['Modalità aereo', 'Spegne con un tocco le connessioni senza fili'] ],
     spiega:'Il Wi-Fi porta internet, il Bluetooth collega gli accessori, AirDrop invia file a chi è vicino e la Modalità aereo spegne le connessioni. Quale di queste spegneresti per non ricevere file da altri?' },
-  { id:'sic-07', area:'sicurezza', tipo:'abbina', fonte:'tutorial',
+  { id:'sic-07', area:'sicurezza', tipo:'abbina', fonte:'tutorial', gruppi:['codici-segreti'],
     testo:'Abbina ogni situazione al comportamento più sicuro.',
     coppie:[
       ['Un sito ti chiede la password per vincere un premio', 'Chiudi la pagina senza scrivere niente'],
@@ -1783,7 +1796,7 @@ const BANCA = [
       ['A lezione compare «Aggiornamento disponibile»', 'Lo dici all\'insegnante prima di fare qualsiasi cosa'],
       ['Il Wi-Fi della scuola va piano', 'Resti sulla rete della scuola, senza cercarne altre'] ],
     spiega:'Password e codice non si danno a nessuno; a lezione non si fa niente sull\'iPad senza l\'insegnante, anche se tenerlo aggiornato è un impegno tuo e della tua famiglia; e per andare su internet si usa solo la rete della scuola. Quale di queste situazioni ti sembra più facile da sbagliare?' },
-  { id:'sic-08', area:'sicurezza', tipo:'abbina', fonte:'glossario',
+  { id:'sic-08', area:'sicurezza', tipo:'abbina', fonte:'glossario', gruppi:['accedi-apple'],
     testo:'Abbina ogni protezione dell\'account a che cosa fa.',
     coppie:[
       ['Due fattori', 'Oltre alla password chiede un codice su un dispositivo fidato'],
@@ -1799,15 +1812,15 @@ const BANCA = [
       ['Un video di 1 minuto', 'circa 150 MB'],
       ['Un film in alta definizione', 'circa 4 GB'] ],
     spiega:'Il testo pesa pochissimo, una foto qualche MB, un minuto di video circa 50 foto e un film qualche GB. Che cosa conviene controllare per primo quando l\'iPad è pieno?' },
-  { id:'sic-10', area:'sicurezza', tipo:'vf', fonte:'glossario',
+  { id:'sic-10', area:'sicurezza', tipo:'vf', fonte:'glossario', gruppi:['codice-faceid'],
     testo:'Se usi Face ID, il codice non serve più e puoi anche dimenticarlo.',
     corretta:false,
     spiega:'Il codice serve sempre, anche quando Face ID non riconosce il viso. Che cosa succederebbe se lo dimenticassi?' },
-  { id:'sic-11', area:'sicurezza', tipo:'scelta', fonte:'glossario',
+  { id:'sic-11', area:'sicurezza', tipo:'scelta', fonte:'glossario', gruppi:['codice-faceid'],
     testo:'Hai appena riacceso l\'iPad. Come lo sblocchi la prima volta?',
     opzioni:['Con il codice', 'Con Face ID', 'Con Touch ID', 'Con tre dita sullo schermo'], corretta:0,
     spiega:'Dopo ogni riaccensione l\'iPad chiede il codice; Face ID e Touch ID funzionano solo dalle volte successive. Perché questa regola rende l\'iPad più sicuro?' },
-  { id:'sic-12', area:'sicurezza', tipo:'scelta', fonte:'glossario',
+  { id:'sic-12', area:'sicurezza', tipo:'scelta', fonte:'glossario', gruppi:['indovinabile'],
     testo:'Quale codice protegge meglio l\'iPad?',
     opzioni:['6 cifre scelte a caso', '123456', 'La tua data di nascita', '000000'], corretta:0,
     spiega:'Cifre in fila, tutte uguali o legate a te (come la data di nascita) sono facili da indovinare; cifre a caso no. Perché la data di nascita è una cattiva idea?' },
@@ -1831,7 +1844,7 @@ const BANCA = [
     testo:'Quale di queste password è più robusta?',
     opzioni:['Lampo!Gatto-Verde27', 'password1234567890', 'abcdefghilmnopqrst', '1234567890123456789'], corretta:0,
     spiega:'Una password robusta mescola parole, maiuscole, numeri e simboli: anche una password lunga è debole se segue una sequenza prevedibile come 1234 o abcd. Come inventeresti una password che ricordi solo tu?' },
-  { id:'sic-18', area:'sicurezza', tipo:'scelta', fonte:'glossario',
+  { id:'sic-18', area:'sicurezza', tipo:'scelta', fonte:'glossario', gruppi:['indovinabile'],
     testo:'Perché non conviene usare il nome del tuo animale come password?',
     opzioni:['Chi ti conosce può indovinarla', 'È troppo lunga da scrivere', 'L\'iPad non accetta i nomi', 'Si cancella da sola dopo un mese'], corretta:0,
     spiega:'Nomi di animali, compleanni e soprannomi sono informazioni che amici e conoscenti sanno: per loro è facile indovinarle. Quali altre informazioni su di te è meglio non usare?' },
@@ -1839,7 +1852,7 @@ const BANCA = [
     testo:'È una buona idea usare la stessa password per tutti i siti, così non la dimentichi.',
     corretta:false,
     spiega:'Se qualcuno scopre una password usata dappertutto, può entrare in tutti i tuoi account. L\'app Password può ricordarle al posto tuo. Quanti account hai già?' },
-  { id:'sic-20', area:'sicurezza', tipo:'vf', fonte:'glossario',
+  { id:'sic-20', area:'sicurezza', tipo:'vf', fonte:'glossario', gruppi:['codici-segreti'],
     testo:'Uno sconosciuto ti chiede il codice di verifica che ti è appena arrivato: puoi dirglielo, tanto non è la password.',
     corretta:false,
     spiega:'Il codice di verifica non si dà a nessuno: chi lo ottiene insieme alla password può entrare al posto tuo. A quale adulto chiederesti aiuto se qualcuno insiste?' },
@@ -1847,11 +1860,11 @@ const BANCA = [
     testo:'Che cos\'è una passkey?',
     opzioni:['Un accesso che sostituisce la password', 'Una password più lunga del solito', 'Il codice per sbloccare lo schermo', 'Una password scritta su un foglio'], corretta:0,
     spiega:'La passkey è un modo nuovo di accedere che prende il posto della password ed è molto difficile da rubare. Perché una cosa che non scrivi tu è più difficile da rubare?' },
-  { id:'sic-22', area:'sicurezza', tipo:'vf', fonte:'glossario',
+  { id:'sic-22', area:'sicurezza', tipo:'vf', fonte:'glossario', gruppi:['accedi-apple'],
     testo:'Con Accedi con Apple devi inventare una nuova password per ogni app.',
     corretta:false,
     spiega:'Accedi con Apple usa il tuo Apple Account: entri nell\'app senza creare una nuova password e puoi anche nascondere la tua email vera. Perché avere meno password da ricordare è più sicuro?' },
-  { id:'sic-23', area:'sicurezza', tipo:'scelta', fonte:'tutorial',
+  { id:'sic-23', area:'sicurezza', tipo:'scelta', fonte:'tutorial', gruppi:['offline'],
     testo:'Per usare AirDrop, che cosa deve essere attivo su entrambi gli iPad?',
     opzioni:['Wi-Fi e Bluetooth', 'Solo la Modalità aereo', 'La posizione GPS', 'Il Risparmio energetico'], corretta:0,
     spiega:'AirDrop usa Wi-Fi e Bluetooth per passare i file tra dispositivi vicini, anche senza internet. Perché i due iPad devono essere vicini?' },
@@ -1859,11 +1872,11 @@ const BANCA = [
     testo:'Perché a scuola AirDrop va impostato su «Solo contatti» o spento?',
     opzioni:['Per non ricevere file da sconosciuti', 'Per avere più spazio sull\'iPad', 'Perché consuma troppo internet', 'Per inviare file più velocemente'], corretta:0,
     spiega:'Con «Solo contatti» o AirDrop spento nessuno sconosciuto può mandarti foto o file. Che cosa faresti se ricevessi lo stesso un file inatteso?' },
-  { id:'sic-25', area:'sicurezza', tipo:'scelta', fonte:'tutorial',
+  { id:'sic-25', area:'sicurezza', tipo:'scelta', fonte:'tutorial', gruppi:['offline'],
     testo:'Quale di queste azioni ha bisogno di internet?',
     opzioni:['Aprire un sito in Safari', 'Inviare una foto con AirDrop', 'Scrivere una nota in Note', 'Fare un conto con la Calcolatrice'], corretta:0,
     spiega:'Un sito arriva da internet; AirDrop invece passa i file direttamente tra dispositivi vicini, e Note e Calcolatrice funzionano anche offline. Quali altre app usi senza internet?' },
-  { id:'sic-26', area:'sicurezza', tipo:'vf', fonte:'glossario',
+  { id:'sic-26', area:'sicurezza', tipo:'vf', fonte:'glossario', gruppi:['offline'],
     testo:'In Modalità aereo puoi comunque scrivere in Note e leggere i file salvati sull\'iPad.',
     corretta:true,
     spiega:'La Modalità aereo spegne le connessioni senza fili, non l\'iPad: le app e i file salvati restano a disposizione. Quando potrebbe esserti utile?' },
@@ -1871,7 +1884,7 @@ const BANCA = [
     testo:'A scuola l\'insegnante autorizza la connessione. A quale rete colleghi l\'iPad?',
     opzioni:['«SacraFamiglia – Studenti»', 'La rete Wi-Fi della piscina', 'La rete aperta del bar vicino', '«SacraFamiglia – Docenti»'], corretta:0,
     spiega:'A scuola l\'iPad resta offline; quando l\'insegnante lo autorizza, per andare su internet si usa solo il Wi-Fi «SacraFamiglia – Studenti»: niente hotspot, niente SIM, niente VPN. Perché è più sicuro che tutti usino la stessa rete protetta?' },
-  { id:'sic-28', area:'sicurezza', tipo:'scelta', fonte:'glossario',
+  { id:'sic-28', area:'sicurezza', tipo:'scelta', fonte:'glossario', gruppi:['bluetooth'],
     testo:'Con quale collegamento la Apple Pencil comunica con l\'iPad?',
     opzioni:['Bluetooth', 'Wi-Fi', 'AirDrop', 'AirPlay'], corretta:0,
     spiega:'La Apple Pencil usa il Bluetooth, il collegamento senza fili a corta distanza per gli accessori. Che cosa succede alla Pencil se spegni il Bluetooth?' },
@@ -1958,20 +1971,31 @@ function indici(n) { return Array.from({ length: n }, (_, i) => i); }
 // e non escono nello stesso modulo. `gruppiPresi`: gruppi già usati (es. dai dilemmi).
 // Priorità: niente conflitti di gruppo > domande non viste nel tentativo precedente.
 // Se la banca non basta, si completa con le domande in conflitto (il modulo ha sempre n domande).
+// La scelta è greedy: con domande che hanno più gruppi (abbinamenti di Gesti: 4 gesti ciascuno)
+// un ordine sfortunato può esaurire i gruppi prima di arrivare a n. Si riprova con altri
+// mescolamenti (fino a TENTATIVI_PESCA) e si tiene il primo senza riempimento in conflitto,
+// altrimenti quello con meno domande in conflitto.
+const TENTATIVI_PESCA = 30;
 function pescaDomande(banca, areaId, n, escludiIds = [], rnd = Math.random, gruppiPresi = []) {
   const area = banca.filter(d => d.area === areaId);
-  const nuove = mescola(area.filter(d => !escludiIds.includes(d.id)), rnd);
-  const viste = mescola(area.filter(d => escludiIds.includes(d.id)), rnd);
-  const presi = new Set(gruppiPresi), scelte = [], rinviate = [];
-  for (const d of nuove.concat(viste)) {
-    if (scelte.length === n) break;
-    const gr = d.gruppi || [];
-    if (gr.some(x => presi.has(x))) { rinviate.push(d); continue; }
-    scelte.push(d);
-    gr.forEach(x => presi.add(x));
+  let migliore = null;
+  for (let k = 0; k < TENTATIVI_PESCA; k++) {
+    const nuove = mescola(area.filter(d => !escludiIds.includes(d.id)), rnd);
+    const viste = mescola(area.filter(d => escludiIds.includes(d.id)), rnd);
+    const presi = new Set(gruppiPresi), scelte = [], rinviate = [];
+    for (const d of nuove.concat(viste)) {
+      if (scelte.length === n) break;
+      const gr = d.gruppi || [];
+      if (gr.some(x => presi.has(x))) { rinviate.push(d); continue; }
+      scelte.push(d);
+      gr.forEach(x => presi.add(x));
+    }
+    const pulite = scelte.length;
+    for (const d of rinviate) { if (scelte.length === n) break; scelte.push(d); }
+    if (!migliore || pulite > migliore.pulite) migliore = { scelte, pulite };
+    if (pulite >= Math.min(n, area.length)) break; // nessun conflitto: primo tentativo valido
   }
-  for (const d of rinviate) { if (scelte.length === n) break; scelte.push(d); }
-  return scelte;
+  return migliore.scelte;
 }
 
 // Livello dalla classe: le 1ª fanno la patente base, 2ª e 3ª il rinnovo annuale (con i dilemmi).
@@ -2085,14 +2109,26 @@ function validaBanca(banca, icone, gesti) {
       if (!Number.isInteger(d.corretta) || d.corretta < 0 || d.corretta >= o.length)
         errori.push(`${t} corretta fuori range`);
       if (d.opzioniIcone && o.some(x => !nomiIcone.has(x))) errori.push(`${t} opzioniIcone con icona inesistente`);
+      // opzioniGesti: 4 disegni (id di GESTI distinti); un gesto sulla domanda svelerebbe la risposta
+      if (d.opzioniGesti && (o.length !== 4 || o.some(x => !idGesti.has(x)) || new Set(o).size !== o.length))
+        errori.push(`${t} opzioniGesti: servono 4 id di GESTI distinti`);
+      if (d.opzioniGesti && d.gesto) errori.push(`${t} opzioniGesti con gesto sulla domanda`);
     } else if (d.tipo === 'vf') {
       if (typeof d.corretta !== 'boolean') errori.push(`${t} corretta non booleana`);
     } else if (d.tipo === 'abbina') {
       if (!Array.isArray(d.coppie) || d.coppie.length !== 4) errori.push(`${t} servono 4 coppie`);
+      else if (d.sxGesti) { // sinistra: id di GESTI distinti; destra: azioni distinte (coppie 1:1)
+        const sx = d.coppie.map(c => c[0]), dx = d.coppie.map(c => c[1]);
+        if (sx.some(x => !idGesti.has(x)) || new Set(sx).size !== 4 || dx.some(x => !x) || new Set(dx).size !== 4)
+          errori.push(`${t} sxGesti: a sinistra 4 id di GESTI distinti, a destra 4 azioni distinte`);
+      }
     } else if (d.tipo === 'ordina') {
       const p = d.passi || [];
       if (p.length < 3 || p.length > 5 || new Set(p).size !== p.length) errori.push(`${t} passi non validi (3-5, distinti)`);
     } else errori.push(`${t} tipo sconosciuto: ${d.tipo}`);
+    if (d.opzioniGesti && d.tipo !== 'scelta') errori.push(`${t} opzioniGesti ammesso solo con tipo scelta`);
+    if (d.opzioniGesti && d.opzioniIcone) errori.push(`${t} opzioniGesti e opzioniIcone insieme`);
+    if (d.sxGesti && d.tipo !== 'abbina') errori.push(`${t} sxGesti ammesso solo con tipo abbina`);
     if (d.icona && !nomiIcone.has(d.icona)) errori.push(`${t} icona inesistente: ${d.icona}`);
     if (d.gesto && !idGesti.has(d.gesto)) errori.push(`${t} gesto inesistente: ${d.gesto}`);
   }
@@ -2114,23 +2150,30 @@ function svgIcona(nome, label = nome) {
   return i.svg.replace('<svg ', label ? `<svg role="img" aria-label="${esc(label)}" ` : '<svg aria-hidden="true" ');
 }
 function rigaIcona(nome) { return `<span class="ico-riga"><span class="ico-mini">${svgIcona(nome, '')}<\/span>${esc(nome)}<\/span>`; }
+// mini-disegno del gesto + descrizione a parole (riscontro ed esito); dopo: testo aggiunto (es. «→ azione»)
+const miniGesto = id => `<span class="gesto-mini">${svgGesto(id, '')}<\/span>`;
+function rigaGesto(id, dopo = '') { return `<span class="gesto-riga">${miniGesto(id)}<span>${esc(GESTI.find(g => g.id === id).come)}${dopo}<\/span><\/span>`; }
 
 const ZONE = { // punto di partenza su schermo 200x130 (offset 20,20)
   'basso':[120,146], 'barra':[120,144], 'alto-destra':[200,26], 'alto-sinistra':[40,26],
-  'centro-alto':[120,40], 'bordo-destro':[216,85], 'schermo':[120,85] };
+  'centro-alto':[120,40], 'schermo':[120,85] };
 const VETT = { su:[0,-70], giu:[0,70], sinistra:[-70,0], destra:[70,0] };
 
-let nGesti = 0; // id univoco del marker: più gesti nella stessa pagina (revisione)
-function svgGesto(id) {
+let nGesti = 0; // id univoco del marker: più gesti nella stessa pagina (revisione, opzioni disegnate)
+// label vuota = decorativo (aria-hidden): dentro i pulsanti delle opzioni l'etichetta è sul pulsante
+function svgGesto(id, label = 'Gesto illustrato su iPad') {
   const g = GESTI.find(x => x.id === id);
   const mid = 'punta-' + (++nGesti);
-  const [x, y] = g.zona === 'schermo' && g.dir === 'giu' ? [120, 50] : ZONE[g.zona];
+  // Spotlight parte dal centro, ben lontano dal bordo alto (non va confuso con le notifiche)
+  const spot = g.zona === 'schermo' && g.dir === 'giu';
+  const [x, y] = spot ? [120, 58] : ZONE[g.zona];
   const dita = g.dita || 1;
   let segni = '';
   const punto = (px, py) => `<circle cx="${px}" cy="${py}" r="7" class="g-dito"/>`;
   if (VETT[g.dir]) {
     let [dx, dy] = VETT[g.dir];
-    if (g.corto) { dx /= 3; dy /= 3; }
+    if (g.corto) { dx /= 2; dy /= 2; } // metà: la punta (25 unità) deve lasciare visibile l'asta
+    if (spot) dy = 48;                  // Spotlight: la freccia non arriva alla barra Home
     for (let k = 0; k < dita; k++) {
       const off = (k - (dita - 1) / 2) * 18;
       const ox = dx ? 0 : off, oy = dx ? off : 0;
@@ -2146,11 +2189,13 @@ function svgGesto(id) {
     const verso = g.dir === 'apri' ? 1 : -1;
     for (let k = 0; k < dita; k++) {
       const ang = (Math.PI * 2 * k) / dita - Math.PI / 2;
-      const r1 = verso > 0 ? 14 : 44, r2 = verso > 0 ? 44 : 14;
+      // aste lunghe: le punte (25 unità) non coprono il gesto; con due dita (verticali) 40, per non toccare la barra
+      const lungo = dita === 2 ? 40 : 50;
+      const r1 = verso > 0 ? 10 : lungo, r2 = verso > 0 ? lungo : 14;
       segni += `<line x1="${x+Math.cos(ang)*r1}" y1="${y+Math.sin(ang)*r1}" x2="${x+Math.cos(ang)*r2}" y2="${y+Math.sin(ang)*r2}" class="g-freccia" marker-end="url(#${mid})"/>` + punto(x+Math.cos(ang)*r1, y+Math.sin(ang)*r1);
     }
   }
-  return `<svg viewBox="0 0 240 170" class="ipad-gesto" role="img" aria-label="Gesto illustrato su iPad">
+  return `<svg viewBox="0 0 240 170" class="ipad-gesto" ${label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true"'}>
     <defs><marker id="${mid}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="g-punta"/></marker></defs>
     <rect x="6" y="6" width="228" height="158" rx="18" class="g-cornice"/>
     <rect x="20" y="20" width="200" height="130" rx="8" class="g-schermo"/>
@@ -2189,15 +2234,21 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}, b
   if (d.scenario) box.append(el('p', 'scenario vetro', esc(d.scenario)));
   if (d.icona) box.append(el('div', 'ico-big', svgIcona(d.icona, 'Icona da riconoscere')));
   if (d.gesto) box.append(el('div', 'gesto-box', svgGesto(d.gesto)));
-  box.append(el('h2', 'testo-domanda', esc(d.testo)));
+  const titolo = el('h2', 'testo-domanda', esc(d.testo));
+  titolo.setAttribute('tabindex', '-1'); // riceve il focus al cambio domanda
+  box.append(titolo);
 
   if (d.tipo === 'scelta') {
-    const lista = el('div', d.opzioniIcone ? 'opzioni griglia-icone' : 'opzioni');
-    ist.ordine.forEach(orig => {
-      const [cls, testo] = marca(orig, d.opzioniIcone ? `<span class="ico-big">${svgIcona(d.opzioni[orig])}<\/span>` : esc(d.opzioni[orig]));
+    const lista = el('div', d.opzioniIcone ? 'opzioni griglia-icone' : d.opzioniGesti ? 'opzioni griglia-gesti' : 'opzioni');
+    ist.ordine.forEach((orig, k) => {
+      const [cls, testo] = marca(orig, d.opzioniIcone ? `<span class="ico-big">${svgIcona(d.opzioni[orig])}<\/span>`
+        : d.opzioniGesti ? miniGesto(d.opzioni[orig]) : esc(d.opzioni[orig]));
       const b = el('button', cls, testo);
       b.setAttribute('aria-pressed', r === orig);
-      if (d.opzioniIcone) b.setAttribute('aria-label', d.opzioni[orig] + (bloccata && orig === d.corretta ? ', risposta giusta' : bloccata && r === orig ? ', la tua risposta, non corretta' : ''));
+      const esito = bloccata && orig === d.corretta ? ', risposta giusta' : bloccata && r === orig ? ', la tua risposta, non corretta' : '';
+      if (d.opzioniIcone) b.setAttribute('aria-label', d.opzioni[orig] + esito);
+      // gesti: etichetta neutra nell'ordine mostrato, il nome del gesto svelerebbe la risposta
+      if (d.opzioniGesti) b.setAttribute('aria-label', `Gesto ${k + 1}` + esito);
       b.disabled = bloccata;
       b.onclick = () => onRisposta(orig);
       lista.append(b);
@@ -2216,12 +2267,14 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}, b
   } else if (d.tipo === 'abbina') {
     const cur = Array.isArray(r) ? r.slice() : new Array(d.coppie.length).fill(null);
     const colori = ['c0', 'c1', 'c2', 'c3'];
-    const grid = el('div', 'abbina');
+    const grid = el('div', 'abbina' + (d.sxGesti ? ' sx-gesti' : ''));
     const sx = el('div', 'col'), dx = el('div', 'col');
     d.coppie.forEach(([a], i) => {
       const b = el('button', 'opz vetro' + (cur[i] != null ? ' ' + colori[i] : '') + (attivo === i ? ' attivo' : ''),
-        (cur[i] != null ? `<span class="num">${i + 1}<\/span>` : '') + esc(a));
+        (cur[i] != null ? `<span class="num">${i + 1}<\/span>` : '') + (d.sxGesti ? miniGesto(a) : esc(a)));
       b.setAttribute('aria-pressed', attivo === i);
+      // l'aria-label sostituisce il badge numerato: VoiceOver deve sentire anche la coppia
+      if (d.sxGesti) b.setAttribute('aria-label', 'Gesto ' + 'ABCD'[i] + (cur[i] != null ? ', abbinato, coppia ' + (i + 1) : ''));
       b.disabled = bloccata;
       b.onclick = () => {
         if (cur[i] != null) { cur[i] = null; onRisposta(cur.slice()); return; }
@@ -2368,21 +2421,24 @@ function primaDaFare(m) { const k = m.confermate.indexOf(false); return k < 0 ? 
 function conferma() {
   if (!confermaRisposta(modulo, modulo.i)) return;
   renderModulo(false);
-  // focus al pannello per VoiceOver; scroll minimo, morbido solo senza prefers-reduced-motion
-  const p = document.querySelector('#s-modulo .riscontro');
+  // focus al pannello per VoiceOver; scroll minimo fino al pulsante Avanti (che sta sotto il pannello),
+  // morbido solo senza prefers-reduced-motion
   const riduci = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  p.focus({ preventScroll: true });
-  p.scrollIntoView({ block: 'nearest', behavior: riduci ? 'auto' : 'smooth' });
+  document.querySelector('#s-modulo .riscontro').focus({ preventScroll: true });
+  document.querySelector('#b-avanti').scrollIntoView({ block: 'nearest', behavior: riduci ? 'auto' : 'smooth' });
 }
+// Avanti: dalla domanda in corso o da una rivista si va sempre alla prima da confermare;
+// a modulo finito, all'esito
 function avanti() {
   if (!modulo.confermate[modulo.i]) return;
-  if (modulo.i < modulo.istanze.length - 1) { modulo.i++; modulo.attivo = null; renderModulo(); }
-  else if (primaDaFare(modulo) === modulo.istanze.length) consegna();
+  const k = primaDaFare(modulo);
+  if (k === modulo.istanze.length) consegna(); else vaiA(k);
 }
 // pallini: si rivedono le domande confermate e si torna a quella in corso, mai oltre
 function vaiA(k) {
   if (k > primaDaFare(modulo)) return;
   modulo.i = k; modulo.attivo = null; renderModulo();
+  document.querySelector('#s-modulo .testo-domanda').focus({ preventScroll: true });
 }
 
 function renderRiscontro(ist, ok) {
@@ -2413,7 +2469,7 @@ function renderModulo(scroll = true) {
     <div class="carta vetro" id="carta"></div>
     <nav class="nav-modulo fine">
       ${fatta
-        ? `<button class="btn" id="b-avanti">${modulo.i < n - 1 ? 'Avanti' : 'Vedi l\'esito'}</button>`
+        ? `<button class="btn" id="b-avanti">${prossima === n ? 'Vedi l\'esito' : prossima === modulo.i + 1 ? 'Avanti' : `Torna alla domanda ${prossima + 1}`}</button>`
         : `<button class="btn" id="b-conferma" ${rispostaCompleta(ist, modulo.risposte[modulo.i]) ? '' : 'disabled'}>Conferma</button>`}
     </nav>
     ${fatta ? '' : '<p class="aiuto centro">Quando sei sicuro tocca Conferma: dopo la risposta non si può più cambiare.</p>'}
@@ -2440,15 +2496,17 @@ function consegna() {
 
 function testoRisposta(ist, r) {
   const d = ist.d;
-  if (d.tipo === 'scelta') return d.opzioniIcone ? rigaIcona(d.opzioni[r]) : esc(d.opzioni[r]);
+  if (d.tipo === 'scelta') return d.opzioniIcone ? rigaIcona(d.opzioni[r]) : d.opzioniGesti ? rigaGesto(d.opzioni[r]) : esc(d.opzioni[r]);
   if (d.tipo === 'vf') return r ? 'Vero' : 'Falso';
+  if (d.tipo === 'abbina' && d.sxGesti) return `<span class="righe-gesti">${d.coppie.map((c, i) => rigaGesto(c[0], ` → ${esc(d.coppie[r[i]][1])}`)).join('')}<\/span>`;
   if (d.tipo === 'abbina') return d.coppie.map((c, i) => `${esc(c[0])} → ${esc(d.coppie[r[i]][1])}`).join('<br>');
   if (d.tipo === 'ordina') return r.map((p, k) => `${k + 1}. ${esc(d.passi[p])}`).join('<br>');
 }
 function testoCorretta(ist) {
   const d = ist.d;
-  if (d.tipo === 'scelta') return d.opzioniIcone ? rigaIcona(d.opzioni[d.corretta]) : esc(d.opzioni[d.corretta]);
+  if (d.tipo === 'scelta') return d.opzioniIcone ? rigaIcona(d.opzioni[d.corretta]) : d.opzioniGesti ? rigaGesto(d.opzioni[d.corretta]) : esc(d.opzioni[d.corretta]);
   if (d.tipo === 'vf') return d.corretta ? 'Vero' : 'Falso';
+  if (d.tipo === 'abbina' && d.sxGesti) return `<span class="righe-gesti">${d.coppie.map(c => rigaGesto(c[0], ` → ${esc(c[1])}`)).join('')}<\/span>`;
   if (d.tipo === 'abbina') return d.coppie.map(c => `${esc(c[0])} → ${esc(c[1])}`).join('<br>');
   if (d.tipo === 'ordina') return d.passi.map((p, k) => `${k + 1}. ${esc(p)}`).join('<br>');
 }
