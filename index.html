@@ -13,7 +13,7 @@
   --azione:#007AFF; --ok:#34C759; --ok-testo:#1A7A34; --ambra:#FF9500; --ambra-testo:#9A5200;
   /* contrasto >=4.5:1 (verificato): --azione-testo per testi blu su vetro, --azione-fondo per sfondi con testo bianco */
   --azione-testo:#0062CC; --azione-fondo:#0062CC;
-  --coppia-1:#0062CC; --coppia-2:#8E3FD0; --coppia-3:#00796B; --coppia-4:#B35200; --su-coppia:#fff;
+  --coppia-1:#0062CC; --coppia-2:#8E3FD0; --coppia-3:#00796B; --coppia-4:#55555F; --su-coppia:#fff; --su-segno:#fff; --tinta-riscontro:8%; --link-riscontro:var(--azione-testo);
   --oro:#C9A227; --viola:#AF52DE;
   --testo:#1C1C1E; --testo-2:#48484A; --sfondo:#EEF1F7;
   --vetro:rgba(255,255,255,.58); --vetro-forte:rgba(255,255,255,.78); --bordo:rgba(255,255,255,.75);
@@ -25,7 +25,9 @@
 @media (prefers-color-scheme:dark){:root{
   --azione:#0A84FF; --ok:#30D158; --ok-testo:#30D158; --ambra:#FF9F0A; --ambra-testo:#FFB340;
   --azione-testo:#4DA3FF; --azione-fondo:#0060DF;
-  --coppia-1:#4DA3FF; --coppia-2:#C58AF5; --coppia-3:#2FD0C0; --coppia-4:#FFA64D; --su-coppia:#0B0D14;
+  --coppia-1:#4DA3FF; --coppia-2:#C58AF5; --coppia-3:#2FD0C0; --coppia-4:#C7C7CC; --su-coppia:#0B0D14; --su-segno:#0B0D14;
+  /* link >=4.5:1 sul pannello ambra anche sopra le tinte piu sature del wall (#1A3A7A, #4A2A6E, #13493A) */
+  --tinta-riscontro:5%; --link-riscontro:#6CB4FF;
   --testo:#F2F2F7; --testo-2:#C7C7CC; --sfondo:#0B0D14;
   --vetro:rgba(44,46,58,.55); --vetro-forte:rgba(44,46,58,.8); --bordo:rgba(255,255,255,.14);
   --ombra:0 10px 40px rgba(0,0,0,.5);
@@ -89,6 +91,25 @@ footer{text-align:center;color:var(--testo-2);font-size:18px;margin-top:32px}
 .ico-riga{display:inline-flex;align-items:center;gap:10px}
 .ico-mini{width:36px;height:36px;flex:none;color:var(--testo)}.ico-mini svg{width:100%;height:100%}
 @media (max-width:600px){.griglia-icone{grid-template-columns:repeat(2,1fr)}.abbina{grid-template-columns:1fr}}
+/* feedback immediato: risposta confermata (bloccata) e pannello di riscontro */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.opz:disabled{cursor:default}.opz:disabled:active{transform:none}
+.segno{display:inline-flex;flex:none;width:30px;height:30px}.segno svg{width:100%;height:100%}
+.opz.giusta,.opz.sbagliata{display:flex;align-items:center;gap:12px}
+.opzioni.vf .opz.giusta,.opzioni.vf .opz.sbagliata,.griglia-icone .opz{justify-content:center}
+.opz.giusta{outline:3px solid var(--ok-testo);background:color-mix(in srgb,var(--ok) var(--tinta-riscontro),var(--vetro-forte))}
+.opz.sbagliata{outline:3px solid var(--ambra-testo);background:color-mix(in srgb,var(--ambra) var(--tinta-riscontro),var(--vetro-forte))}
+.griglia-icone .opz{position:relative}.griglia-icone .segno{position:absolute;top:8px;right:8px}
+.riscontro{margin-top:20px;padding:16px 20px;border-radius:16px;display:flex;flex-direction:column;gap:10px}
+.riscontro:focus{outline:none} /* riceve il focus solo da script, per VoiceOver */
+.riscontro p{margin:0}
+.riscontro.ok{box-shadow:inset 0 0 0 2px var(--ok-testo);background:color-mix(in srgb,var(--ok) var(--tinta-riscontro),var(--vetro-forte))}
+.riscontro.rip{box-shadow:inset 0 0 0 2px var(--ambra-testo);background:color-mix(in srgb,var(--ambra) var(--tinta-riscontro),var(--vetro-forte))}
+.r-titolo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700}
+.r-titolo svg{width:30px;height:30px;flex:none}
+.riscontro.ok .r-titolo{color:var(--ok-testo)}.riscontro.rip .r-titolo{color:var(--ambra-testo)}
+.riscontro .fonte{color:var(--link-riscontro)}
+.testo-domanda:focus{outline:none} /* focus solo da script al cambio domanda, per VoiceOver */
 .hero{padding:32px;text-align:center;max-width:620px;margin:6vh auto 0}
 .hero-ico{width:72px;height:72px;margin:0 auto 12px;color:var(--azione)}
 .avviso{background:color-mix(in srgb,var(--ambra) 16%,transparent);border-radius:12px;padding:10px 14px;color:var(--testo)}
@@ -112,9 +133,12 @@ footer{text-align:center;color:var(--testo-2);font-size:18px;margin-top:32px}
 .pallini{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
 .pallino{width:44px;height:44px;border:0;background:none;position:relative}
 .pallino::after{content:"";position:absolute;inset:14px;border-radius:50%;border:2px solid var(--testo-2)}
-.pallino.fatto::after{background:var(--azione);border-color:var(--azione)}
+.pallino.ok::after{background:var(--ok-testo);border-color:var(--ok-testo)}
+.pallino.rip::after{background:var(--ambra);border-color:var(--ambra-testo);border-radius:4px;transform:rotate(45deg)} /* rombo: distinguibile anche senza colore */
+.pallino:disabled{cursor:default}
 .pallino.qui::after{inset:10px;box-shadow:0 0 0 3px color-mix(in srgb,var(--azione) 35%,transparent)}
 .nav-modulo{display:flex;justify-content:space-between;gap:12px;margin-top:18px}
+.nav-modulo.fine{justify-content:flex-end}
 .centro{text-align:center}
 .contatore{color:var(--testo-2)}
 .esito{padding:28px;text-align:center;margin-bottom:22px}
@@ -227,7 +251,7 @@ const ICONE = [
   { cat:"Multimedia", nome:"AirPlay", sf:"airplayvideo", desc:"Mostra lo schermo senza fili su una TV o un monitor", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/><polygon points="12 14 17.5 21 6.5 21 12 14" fill="currentColor" stroke="none"/></svg>` },
   { cat:"Connettività", nome:"Wi-Fi", sf:"wifi", desc:"Connessione a una rete Wi-Fi", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a16 16 0 0 1 20 0"/><path d="M5 12.5a11 11 0 0 1 14 0"/><path d="M8.5 16a6 6 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg>` },
   { cat:"Connettività", nome:"Bluetooth", sf:"bluetooth", desc:"Attiva o disattiva il Bluetooth", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 7 17 17 12 22 12 2 17 7 7 17"/></svg>` },
-  { cat:"Connettività", nome:"AirDrop", sf:"airdropicon", desc:"Condividi rapidamente con dispositivi Apple vicini", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a8 8 0 0 1 16 0"/><path d="M8 14a4 4 0 0 1 8 0"/><path d="M9 15l3 5 3-5"/></svg>` },
+  { cat:"Connettività", nome:"AirDrop", sf:"airdropicon", desc:"Condividi rapidamente con dispositivi Apple vicini", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.54 19.51A8.5 8.5 0 1 1 17.46 19.51"/><path d="M8.95 16.64A4.75 4.75 0 1 1 15.05 16.64"/><circle cx="12" cy="13" r="1.5" fill="currentColor" stroke="none"/></svg>` },
   { cat:"Connettività", nome:"Modalità aereo", sf:"airplane", desc:"Disattiva tutte le connessioni", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2 3 8l6 4-3 3-3.5-1L1.5 15l4 1.5 1.5 4 1-1.5-1-3.5 3-3 4 6z"/></svg>` },
   { cat:"Connettività", nome:"Posizione", sf:"location", desc:"Attiva i servizi di localizzazione", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>` },
   { cat:"Connettività", nome:"Batteria", sf:"battery.100", desc:"Stato della batteria", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="17" height="8" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="10" width="11" height="4" fill="currentColor" stroke="none"/></svg>` },
@@ -424,7 +448,7 @@ const BANCA = [
     corretta:false,
     spiega:'È vietata qualsiasi manomissione del sistema operativo, cioè il jailbreak e l\'alterazione delle protezioni. Se le protezioni servono a tutelarti, che cosa perderesti togliendole?' },
   { id:'reg-24', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['rete'],
-    testo:'Se il Wi-Fi della scuola non funziona, con il permesso del docente si può usare l\'hotspot di un compagno.',
+    testo:'Se il Wi-Fi della scuola non funziona, con il permesso del docente si può usare la rete della piscina che si vede dall\'aula.',
     corretta:false,
     spiega:'Per andare su internet si usa solo la rete della scuola: niente hotspot, SIM o VPN. E anche a questa rete ci si collega solo con l\'autorizzazione; altrimenti l\'iPad resta offline. Perché la scuola vuole che tutti passino dalla stessa rete protetta?' },
   { id:'reg-26', area:'regole', tipo:'vf', fonte:'regolamento', gruppi:['riprese'],
@@ -860,14 +884,14 @@ const BANCA = [
     corretta:0,
     spiega:'Il permesso di usare l\'iPad per un lavoro non comprende la musica: il regolamento vieta di ascoltarla senza autorizzazione, anche con le cuffie e a basso volume; e in ricreazione l\'iPad non si usa. Perché l\'insegnante potrebbe voler decidere anche questo?' },
   { id:'dil-25', area:'regole', solo:'rinnovo', tipo:'scelta', fonte:'regolamento', gruppi:['rete'],
-    scenario:'Per una ricerca l\'insegnante autorizza la connessione, ma il Wi-Fi «SacraFamiglia – Studenti» va a singhiozzo. Un compagno propone a Marco di collegarsi all\'hotspot di un telefono: «È più veloce, e la ricerca è autorizzata».',
+    scenario:'Per una ricerca l\'insegnante autorizza la connessione, ma il Wi-Fi «SacraFamiglia – Studenti» va a singhiozzo. Nell\'elenco delle reti si vede anche quella della piscina, e un compagno propone a Marco di usarla: «È più veloce, e la ricerca è autorizzata».',
     testo:'Che cosa è coerente con il Regolamento per Marco?',
     opzioni:['Restare solo sulla rete Studenti, anche se è lenta.',
       'Collegarsi, perché la ricerca è autorizzata.',
-      'Collegarsi, se l\'hotspot ha una password.',
+      'Collegarsi, se la rete della piscina è aperta.',
       'Chiedere all\'insegnante la rete «SacraFamiglia – Docenti».'],
     corretta:0,
-    spiega:'L\'autorizzazione dell\'insegnante vale per la rete degli studenti: per andare su internet si usa solo quella, niente hotspot, SIM o VPN, anche quando è lenta. Perché la scuola vuole che tutti passino solo dalla sua rete?' },
+    spiega:'L\'autorizzazione dell\'insegnante vale per la rete degli studenti: per andare su internet si usa solo quella, anche quando è lenta. Le altre reti visibili, come quella della piscina o quella dei docenti, non si usano. Perché la scuola vuole che tutti passino solo dalla sua rete?' },
 
   // ===== Area Icone (fonte: Icone Apple, 60 domande convertite; distrattori statici: stessa categoria in ICONE, poi altre) =====
   // ico-27, ico-35, ico-42 riscritte per coerenza col Regolamento (fotocamera e videochiamate bloccate dal profilo)
@@ -1845,7 +1869,7 @@ const BANCA = [
     spiega:'La Modalità aereo spegne le connessioni senza fili, non l\'iPad: le app e i file salvati restano a disposizione. Quando potrebbe esserti utile?' },
   { id:'sic-27', area:'sicurezza', tipo:'scelta', fonte:'tutorial',
     testo:'A scuola l\'insegnante autorizza la connessione. A quale rete colleghi l\'iPad?',
-    opzioni:['«SacraFamiglia – Studenti»', 'L\'hotspot di un compagno', 'La rete aperta del bar vicino', '«SacraFamiglia – Docenti»'], corretta:0,
+    opzioni:['«SacraFamiglia – Studenti»', 'La rete Wi-Fi della piscina', 'La rete aperta del bar vicino', '«SacraFamiglia – Docenti»'], corretta:0,
     spiega:'A scuola l\'iPad resta offline; quando l\'insegnante lo autorizza, per andare su internet si usa solo il Wi-Fi «SacraFamiglia – Studenti»: niente hotspot, niente SIM, niente VPN. Perché è più sicuro che tutti usino la stessa rete protetta?' },
   { id:'sic-28', area:'sicurezza', tipo:'scelta', fonte:'glossario',
     testo:'Con quale collegamento la Apple Pencil comunica con l\'iPad?',
@@ -2146,8 +2170,22 @@ function rispostaCompleta(ist, r) {
   return false;
 }
 
-function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
-  const d = ist.d, box = el('div', 'domanda');
+// Segni SVG del riscontro (spunta verde, punto esclamativo ambra): mai emoji, mai rosso.
+const SVG_GIUSTA = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--ok-testo)"/><path d="M7 12.5l3.2 3.2L17 9" stroke="var(--su-segno)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_DA_RIVEDERE = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--ambra-testo)"/><path d="M12 6.5v7" stroke="var(--su-segno)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.6" fill="var(--su-segno)"/></svg>`;
+const segno = (svg, label) => `<span class="segno">${svg}<span class="sr">${label}<\/span><\/span>`;
+
+// bloccata: risposta confermata, sola lettura. Nessun pulsante attivo; per scelta e V/F
+// l'opzione giusta ha la spunta verde e quella scelta sbagliata il segno ambra.
+function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}, bloccata = false) {
+  const d = ist.d, box = el('div', 'domanda' + (bloccata ? ' bloccata' : ''));
+  // classi e segno di un'opzione scelta/V-F: blu se in composizione, verde/ambra se bloccata
+  const marca = (v, testo) => {
+    if (!bloccata) return ['opz vetro' + (r === v ? ' scelta' : ''), testo];
+    if (v === d.corretta) return ['opz vetro giusta', segno(SVG_GIUSTA, 'Risposta giusta: ') + testo];
+    if (r === v) return ['opz vetro sbagliata', segno(SVG_DA_RIVEDERE, 'La tua risposta, non corretta: ') + testo];
+    return ['opz vetro', testo];
+  };
   if (d.scenario) box.append(el('p', 'scenario vetro', esc(d.scenario)));
   if (d.icona) box.append(el('div', 'ico-big', svgIcona(d.icona, 'Icona da riconoscere')));
   if (d.gesto) box.append(el('div', 'gesto-box', svgGesto(d.gesto)));
@@ -2156,10 +2194,11 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
   if (d.tipo === 'scelta') {
     const lista = el('div', d.opzioniIcone ? 'opzioni griglia-icone' : 'opzioni');
     ist.ordine.forEach(orig => {
-      const b = el('button', 'opz vetro' + (r === orig ? ' scelta' : ''),
-        d.opzioniIcone ? `<span class="ico-big">${svgIcona(d.opzioni[orig])}<\/span>` : esc(d.opzioni[orig]));
+      const [cls, testo] = marca(orig, d.opzioniIcone ? `<span class="ico-big">${svgIcona(d.opzioni[orig])}<\/span>` : esc(d.opzioni[orig]));
+      const b = el('button', cls, testo);
       b.setAttribute('aria-pressed', r === orig);
-      if (d.opzioniIcone) b.setAttribute('aria-label', d.opzioni[orig]);
+      if (d.opzioniIcone) b.setAttribute('aria-label', d.opzioni[orig] + (bloccata && orig === d.corretta ? ', risposta giusta' : bloccata && r === orig ? ', la tua risposta, non corretta' : ''));
+      b.disabled = bloccata;
       b.onclick = () => onRisposta(orig);
       lista.append(b);
     });
@@ -2167,8 +2206,9 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
   } else if (d.tipo === 'vf') {
     const lista = el('div', 'opzioni vf');
     [[true, 'Vero'], [false, 'Falso']].forEach(([v, t]) => {
-      const b = el('button', 'opz vetro' + (r === v ? ' scelta' : ''), t);
+      const b = el('button', ...marca(v, t));
       b.setAttribute('aria-pressed', r === v);
+      b.disabled = bloccata;
       b.onclick = () => onRisposta(v);
       lista.append(b);
     });
@@ -2182,6 +2222,7 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
       const b = el('button', 'opz vetro' + (cur[i] != null ? ' ' + colori[i] : '') + (attivo === i ? ' attivo' : ''),
         (cur[i] != null ? `<span class="num">${i + 1}<\/span>` : '') + esc(a));
       b.setAttribute('aria-pressed', attivo === i);
+      b.disabled = bloccata;
       b.onclick = () => {
         if (cur[i] != null) { cur[i] = null; onRisposta(cur.slice()); return; }
         onAttivo(i);
@@ -2192,6 +2233,7 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
       const usataDa = cur.indexOf(orig);
       const b = el('button', 'opz vetro' + (usataDa >= 0 ? ' ' + colori[usataDa] : ''),
         (usataDa >= 0 ? `<span class="num">${usataDa + 1}<\/span>` : '') + esc(d.coppie[orig][1]));
+      b.disabled = bloccata;
       b.onclick = () => {
         if (usataDa >= 0) { cur[usataDa] = null; onRisposta(cur.slice()); return; }
         if (attivo == null) return;
@@ -2200,7 +2242,7 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
       dx.append(b);
     });
     grid.append(sx, dx);
-    box.append(el('p', 'aiuto', 'Tocca una voce a sinistra, poi quella che le corrisponde a destra.'), grid);
+    box.append(el('p', 'aiuto', bloccata ? 'I tuoi abbinamenti:' : 'Tocca una voce a sinistra, poi quella che le corrisponde a destra.'), grid);
   } else if (d.tipo === 'ordina') {
     const cur = Array.isArray(r) ? r.slice() : [];
     const lista = el('div', 'opzioni');
@@ -2208,10 +2250,11 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
       const pos = cur.indexOf(orig);
       const b = el('button', 'opz vetro ordina' + (pos >= 0 ? ' scelta' : ''),
         `<span class="num">${pos >= 0 ? pos + 1 : ''}<\/span>${esc(d.passi[orig])}`);
-      b.disabled = pos >= 0;
+      b.disabled = bloccata || pos >= 0;
       b.onclick = () => onRisposta(cur.concat(orig));
       lista.append(b);
     });
+    if (bloccata) { box.append(el('p', 'aiuto', 'Il tuo ordine:'), lista); return box; }
     const az = el('div', 'azioni-ordina');
     const ann = el('button', 'btn sec', 'Annulla ultimo'); ann.disabled = !cur.length; ann.onclick = () => onRisposta(cur.slice(0, -1));
     const ric = el('button', 'btn sec', 'Ricomincia'); ric.disabled = !cur.length; ric.onclick = () => onRisposta([]);
@@ -2223,7 +2266,7 @@ function renderDomanda(ist, r, onRisposta, attivo = null, onAttivo = () => {}) {
 
 const STORE = (() => { try { return window.sessionStorage; } catch (e) { return null; } })();
 let stato = caricaStato(STORE);
-let modulo = null; // { area, istanze, risposte, i, attivo }
+let modulo = null; // { area, istanze, risposte, i, attivo, confermate: boolean[], esiti: boolean[] }
 
 function salva() { salvaStato(STORE, stato); }
 function mostra(id, scroll = true) {
@@ -2303,8 +2346,57 @@ function avviaModulo(areaId) {
   const escl = stato.ultimeDomande[areaId] || [];
   const domande = pescaModulo(BANCA, areaId, livelloDaClasse(stato.studente.classe), escl);
   stato.ultimeDomande[areaId] = domande.map(d => d.id); salva();
-  modulo = { area: areaId, istanze: domande.map(d => preparaIstanza(d)), risposte: [], i: 0, attivo: null };
+  modulo = { area: areaId, istanze: domande.map(d => preparaIstanza(d)), risposte: [], i: 0, attivo: null,
+    confermate: domande.map(() => false), esiti: [] };
   renderModulo();
+}
+
+// Feedback immediato: ogni risposta si conferma, viene valutata subito e resta bloccata.
+// Funzioni di stato (testate in tests/feedback.test.mjs); restituiscono false se non fanno nulla.
+function impostaRisposta(m, i, r) {
+  if (m.confermate[i]) return false;
+  m.risposte[i] = r; return true;
+}
+function confermaRisposta(m, i) {
+  if (m.confermate[i] || !rispostaCompleta(m.istanze[i], m.risposte[i])) return false;
+  m.esiti[i] = valuta(m.istanze[i], m.risposte[i]);
+  m.confermate[i] = true; m.attivo = null; return true;
+}
+// prima domanda da confermare (= quella in corso); n se il modulo è finito
+function primaDaFare(m) { const k = m.confermate.indexOf(false); return k < 0 ? m.confermate.length : k; }
+
+function conferma() {
+  if (!confermaRisposta(modulo, modulo.i)) return;
+  renderModulo(false);
+  // focus al pannello per VoiceOver; scroll minimo, morbido solo senza prefers-reduced-motion
+  const p = document.querySelector('#s-modulo .riscontro');
+  const riduci = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  p.focus({ preventScroll: true });
+  p.scrollIntoView({ block: 'nearest', behavior: riduci ? 'auto' : 'smooth' });
+}
+function avanti() {
+  if (!modulo.confermate[modulo.i]) return;
+  if (modulo.i < modulo.istanze.length - 1) { modulo.i++; modulo.attivo = null; renderModulo(); }
+  else if (primaDaFare(modulo) === modulo.istanze.length) consegna();
+}
+// pallini: si rivedono le domande confermate e si torna a quella in corso, mai oltre
+function vaiA(k) {
+  if (k > primaDaFare(modulo)) return;
+  modulo.i = k; modulo.attivo = null; renderModulo();
+}
+
+function renderRiscontro(ist, ok) {
+  const d = ist.d, f = FONTI[d.fonte];
+  const p = el('div', 'riscontro ' + (ok ? 'ok' : 'rip'), ok
+    ? `<p class="r-titolo">${SVG_GIUSTA}Risposta corretta<\/p><p class="perche">${esc(d.spiega)}<\/p>`
+    : `<p class="r-titolo">${SVG_DA_RIVEDERE}Non è corretta<\/p>
+       <p><span class="et-giusta">Risposta giusta<\/span><br>${testoCorretta(ist)}<\/p>
+       <p class="perche">${esc(d.spiega)}<\/p>
+       <a class="fonte" href="${f.url}" target="_blank" rel="noopener">Ripassa su ${esc(f.nome)}<\/a>`);
+  p.setAttribute('role', 'status');
+  p.setAttribute('aria-live', 'polite');
+  p.setAttribute('tabindex', '-1');
+  return p;
 }
 
 function renderModulo(scroll = true) {
@@ -2312,30 +2404,34 @@ function renderModulo(scroll = true) {
   const area = AREE.find(a => a.id === modulo.area);
   const ist = modulo.istanze[modulo.i];
   const n = modulo.istanze.length;
-  const tutte = modulo.istanze.every((x, k) => rispostaCompleta(x, modulo.risposte[k]));
+  const fatta = modulo.confermate[modulo.i], prossima = primaDaFare(modulo);
+  const statoPallino = k => modulo.confermate[k] ? (modulo.esiti[k] ? 'ok' : 'rip') : '';
+  const nomePallino = k => modulo.confermate[k] ? (modulo.esiti[k] ? 'corretta' : 'non corretta') : (k === prossima ? 'da rispondere' : 'da fare');
   s.innerHTML = `
     <header class="testata"><h2>${esc(area.nome)}</h2><span class="contatore">Domanda ${modulo.i + 1} di ${n}</span></header>
-    <div class="pallini">${modulo.istanze.map((x, k) => `<button class="pallino ${rispostaCompleta(x, modulo.risposte[k]) ? 'fatto' : ''} ${k === modulo.i ? 'qui' : ''}" data-k="${k}" aria-label="Vai alla domanda ${k + 1}"></button>`).join('')}</div>
+    <div class="pallini">${modulo.istanze.map((x, k) => `<button class="pallino ${statoPallino(k)} ${k === modulo.i ? 'qui' : ''}" data-k="${k}" ${k > prossima ? 'disabled' : ''} aria-label="Domanda ${k + 1}, ${nomePallino(k)}"${k === modulo.i ? ' aria-current="step"' : ''}></button>`).join('')}</div>
     <div class="carta vetro" id="carta"></div>
-    <nav class="nav-modulo">
-      <button class="btn sec" id="b-prec" ${modulo.i === 0 ? 'disabled' : ''}>Indietro</button>
-      ${modulo.i < n - 1 ? '<button class="btn" id="b-succ">Avanti</button>' : `<button class="btn" id="b-consegna" ${tutte ? '' : 'disabled'}>Consegna</button>`}
+    <nav class="nav-modulo fine">
+      ${fatta
+        ? `<button class="btn" id="b-avanti">${modulo.i < n - 1 ? 'Avanti' : 'Vedi l\'esito'}</button>`
+        : `<button class="btn" id="b-conferma" ${rispostaCompleta(ist, modulo.risposte[modulo.i]) ? '' : 'disabled'}>Conferma</button>`}
     </nav>
-    ${modulo.i === n - 1 && !tutte ? '<p class="aiuto centro">Per consegnare rispondi a tutte le domande (i pallini pieni sono quelle fatte).</p>' : ''}
+    ${fatta ? '' : '<p class="aiuto centro">Quando sei sicuro tocca Conferma: dopo la risposta non si può più cambiare.</p>'}
     <p class="centro"><button class="btn sec" id="b-esci">Torna al libretto</button></p>`;
-  s.querySelector('#carta').append(renderDomanda(ist, modulo.risposte[modulo.i],
-    r => { modulo.risposte[modulo.i] = r; renderModulo(false); },
-    modulo.attivo, i => { modulo.attivo = i; renderModulo(false); }));
-  s.querySelectorAll('.pallino').forEach(b => b.onclick = () => { modulo.i = +b.dataset.k; modulo.attivo = null; renderModulo(); });
-  s.querySelector('#b-prec').onclick = () => { modulo.i--; modulo.attivo = null; renderModulo(); };
-  const succ = s.querySelector('#b-succ'); if (succ) succ.onclick = () => { modulo.i++; modulo.attivo = null; renderModulo(); };
-  const cons = s.querySelector('#b-consegna'); if (cons) cons.onclick = consegna;
-  s.querySelector('#b-esci').onclick = () => { if (!modulo.risposte.some(r => r !== undefined) || confirm('Uscendo perdi le risposte di questo tentativo. Vuoi uscire?')) renderLibretto(); };
+  const carta = s.querySelector('#carta');
+  carta.append(renderDomanda(ist, modulo.risposte[modulo.i],
+    r => { if (impostaRisposta(modulo, modulo.i, r)) renderModulo(false); },
+    modulo.attivo, i => { modulo.attivo = i; renderModulo(false); }, fatta));
+  if (fatta) carta.append(renderRiscontro(ist, modulo.esiti[modulo.i]));
+  s.querySelectorAll('.pallino').forEach(b => b.onclick = () => vaiA(+b.dataset.k));
+  const conf = s.querySelector('#b-conferma'); if (conf) conf.onclick = conferma;
+  const av = s.querySelector('#b-avanti'); if (av) av.onclick = avanti;
+  s.querySelector('#b-esci').onclick = () => { if (!modulo.confermate.some(Boolean) || confirm('Uscendo perdi le risposte di questo tentativo. Vuoi uscire?')) renderLibretto(); };
   mostra('s-modulo', scroll);
 }
 
 function consegna() {
-  const risultati = modulo.istanze.map((ist, k) => ({ ist, r: modulo.risposte[k], ok: valuta(ist, modulo.risposte[k]) }));
+  const risultati = modulo.istanze.map((ist, k) => ({ ist, r: modulo.risposte[k], ok: modulo.esiti[k] }));
   const es = esitoModulo(modulo.area, risultati.filter(x => x.ok).length);
   stato.moduli[modulo.area] = { superato: es.superato, punteggio: es.punteggio, data: oggiISO() };
   salva();
